@@ -2496,11 +2496,15 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
 
   const PAYLOAD_SPEED = 1.35;
   const LINK_REPAIR_MS = 6000;
+  const DEFAULT_MESSAGE = "101101000110";
+  const AUTO_TRAFFIC_MIN_MS = 6000;
+  const AUTO_TRAFFIC_MAX_MS = 12000;
 
   let clientIndex = -1;
   let orchestratorIndex = -1;
   let serviceIndex = -1;
   let linkCreationSource = null;
+  let autoTrafficTimer = null;
 
   function setStatus(message) {
     if (statusEl) {
@@ -2514,6 +2518,15 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
 
   function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
+  }
+
+  function randomBitstring(minLength, maxLength) {
+    const length = Math.floor(randomBetween(minLength, maxLength + 1));
+    let bits = "";
+    for (let i = 0; i < length; i++) {
+      bits += Math.random() > 0.5 ? "1" : "0";
+    }
+    return bits;
   }
 
   function randomPoint(radius) {
@@ -2700,7 +2713,7 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
     return path.reverse();
   }
 
-  function createPayload(path) {
+  function createPayload(path, message) {
     const geometry = new THREE.SphereGeometry(0.18, 16, 16);
     const material = new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.95 });
     const mesh = new THREE.Mesh(geometry, material);
@@ -2712,7 +2725,8 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
       path: path.slice(),
       segmentIndex: 0,
       progress: 0,
-      alive: true
+      alive: true,
+      message: message || DEFAULT_MESSAGE
     };
   }
 
@@ -2749,6 +2763,17 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
       default:
         return capitalize(node.type) + " node - capacity " + node.capacity + ", latency " + node.latency + ".";
     }
+  }
+
+  function nodeFriendlyName(index) {
+    const node = nodes[index];
+    if (!node) {
+      return "node " + index;
+    }
+    if (node.role && node.role !== "normal") {
+      return capitalize(node.role) + " node";
+    }
+    return capitalize(node.type) + " node " + (index + 1);
   }
 
   function handleNodeClick(index, shiftKey) {
@@ -2932,7 +2957,7 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
           payload.mesh.parent.remove(payload.mesh);
         }
         payloads.splice(i, 1);
-        setStatus("Transmission complete: 101101000110 delivered successfully.");
+        setStatus("Transmission complete: " + payload.message + " delivered successfully.");
         continue;
       }
 
@@ -2947,14 +2972,14 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
             payload.mesh.parent.remove(payload.mesh);
           }
           payloads.splice(i, 1);
-          setStatus("Transmission failed: network partitioned, no path for 101101000110.");
+          setStatus("Transmission failed: network partitioned, no path for " + payload.message + ".");
           continue;
         }
         payload.path = reroute;
         payload.segmentIndex = 0;
         payload.progress = 0;
         payload.mesh.position.copy(nodes[reroute[0]].position);
-        setStatus("Path broken. Re-routing 101101000110 through alternate links...");
+        setStatus("Path broken. Re-routing " + payload.message + " through alternate links...");
         continue;
       }
 
@@ -2995,8 +3020,8 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
         setStatus('No available path from client to service. Try repairing or creating links.');
         return;
       }
-      payloads.push(createPayload(path));
-      setStatus('Sending 101101000110 from client to service (' + (path.length - 1) + ' hops)...');
+      payloads.push(createPayload(path, DEFAULT_MESSAGE));
+      setStatus('Sending ' + DEFAULT_MESSAGE + ' from client to service (' + (path.length - 1) + ' hops)...');
     });
   }
 
@@ -3016,6 +3041,46 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
 
   window.addEventListener('resize', onResize);
 
+  function sendRandomTransmission() {
+    const attempts = 10;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      const start = Math.floor(Math.random() * nodes.length);
+      let end = Math.floor(Math.random() * nodes.length);
+      if (start === end) {
+        continue;
+      }
+      const path = findPath(start, end);
+      if (path && path.length > 1) {
+        const bitstring = randomBitstring(8, 16);
+        payloads.push(createPayload(path, bitstring));
+        setStatus(
+          'Auto traffic: routing ' +
+            bitstring +
+            ' from ' +
+            nodeFriendlyName(start) +
+            ' to ' +
+            nodeFriendlyName(end) +
+            ' (' +
+            (path.length - 1) +
+            ' hops).'
+        );
+        return true;
+      }
+    }
+    setStatus('Auto traffic: unable to find a random route right now.');
+    return false;
+  }
+
+  function scheduleRandomTransmission() {
+    if (autoTrafficTimer) {
+      clearTimeout(autoTrafficTimer);
+    }
+    autoTrafficTimer = window.setTimeout(function () {
+      sendRandomTransmission();
+      scheduleRandomTransmission();
+    }, randomBetween(AUTO_TRAFFIC_MIN_MS, AUTO_TRAFFIC_MAX_MS));
+  }
+
   let lastTime = performance.now();
   function animate(now) {
     requestAnimationFrame(animate);
@@ -3028,6 +3093,7 @@ THREE.MapControls.prototype.constructor = THREE.MapControls;
     renderer.render(scene, camera);
   }
   requestAnimationFrame(animate);
+  scheduleRandomTransmission();
 })();
 </script>
 
