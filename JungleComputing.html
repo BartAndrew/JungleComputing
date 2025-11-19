@@ -1,0 +1,798 @@
+<!-- Jungle Computing Simulator -->
+<div id="jungle-sim-wrapper">
+  <div id="jungle-sim"></div>
+  <div id="jungle-sim-overlay">
+    <div class="jc-panel">
+      <h3>Jungle Computing Simulator</h3>
+      <p class="jc-subtitle">
+        Heterogeneous nodes routing data across a dynamic network.
+      </p>
+      <div class="jc-controls">
+        <button id="jc-send-btn">Send 101101000110</button>
+        <button id="jc-reset-btn">Reset View</button>
+      </div>
+      <p class="jc-help">
+        • Drag to rotate, scroll to zoom.<br />
+        • Click a link to cut it (auto-repairs after a few seconds).<br />
+        • Shift-click two nodes to create a new link.<br />
+        • Data will attempt to re-route if paths are broken.
+      </p>
+      <p id="jc-status" class="jc-status">Ready.</p>
+    </div>
+    <div class="jc-legend">
+      <span class="jc-dot jc-client"></span> Client
+      <span class="jc-dot jc-orch"></span> Orchestrator
+      <span class="jc-dot jc-browser"></span> Browser
+      <span class="jc-dot jc-edge"></span> Edge
+      <span class="jc-dot jc-cloud"></span> Cloud
+    </div>
+  </div>
+</div>
+
+<style>
+  #jungle-sim-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: 480px;
+    margin: 1.5rem auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at top, #101828, #020617);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.75);
+  }
+
+  #jungle-sim {
+    width: 100%;
+    height: 100%;
+  }
+
+  #jungle-sim-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.75rem 0.75rem 0.5rem 0.75rem;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    color: #e5e7eb;
+    font-size: 13px;
+  }
+
+  .jc-panel {
+    pointer-events: auto;
+    background: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.92),
+      rgba(15, 23, 42, 0.85)
+    );
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    max-width: 320px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.7);
+  }
+
+  .jc-panel h3 {
+    margin: 0 0 0.1rem 0;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .jc-subtitle {
+    margin: 0 0 0.45rem 0;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .jc-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .jc-controls button {
+    pointer-events: auto;
+    border-radius: 999px;
+    border: none;
+    padding: 0.35rem 0.8rem;
+    font-size: 12px;
+    cursor: pointer;
+    background: #22c55e;
+    color: #022c22;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.55);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+  }
+
+  .jc-controls button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.7);
+    background: #4ade80;
+  }
+
+  .jc-controls button#jc-reset-btn {
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.55);
+  }
+
+  .jc-controls button#jc-reset-btn:hover {
+    background: rgba(30, 64, 175, 0.95);
+    border-color: rgba(129, 140, 248, 0.9);
+  }
+
+  .jc-help {
+    margin: 0 0 0.35rem 0;
+    font-size: 11px;
+    line-height: 1.35;
+    color: #9ca3af;
+  }
+
+  .jc-status {
+    margin: 0;
+    font-size: 11px;
+    color: #e5e7eb;
+  }
+
+  .jc-legend {
+    pointer-events: none;
+    align-self: flex-end;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: radial-gradient(
+      circle at center,
+      rgba(15, 23, 42, 0.92),
+      rgba(15, 23, 42, 0.7)
+    );
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    font-size: 11px;
+  }
+
+  .jc-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    margin-right: 4px;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .jc-client {
+    background: #f59e0b;
+    color: #f59e0b;
+  }
+  .jc-orch {
+    background: #f97316;
+    color: #f97316;
+  }
+  .jc-browser {
+    background: #22c55e;
+    color: #22c55e;
+  }
+  .jc-edge {
+    background: #06b6d4;
+    color: #06b6d4;
+  }
+  .jc-cloud {
+    background: #6366f1;
+    color: #6366f1;
+  }
+
+  @media (max-width: 640px) {
+    #jungle-sim-wrapper {
+      height: 420px;
+    }
+    .jc-panel {
+      max-width: 100%;
+    }
+    .jc-legend {
+      font-size: 10px;
+    }
+  }
+</style>
+
+<!-- Three.js + OrbitControls from CDN -->
+<script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+  (function () {
+    const container = document.getElementById("jungle-sim");
+    const wrapper = document.getElementById("jungle-sim-wrapper");
+    if (!container || !wrapper || typeof THREE === "undefined") {
+      console.warn("Jungle simulator: container or THREE.js not available.");
+      return;
+    }
+
+    const statusEl = document.getElementById("jc-status");
+    const sendBtn = document.getElementById("jc-send-btn");
+    const resetBtn = document.getElementById("jc-reset-btn");
+
+    const DATA_BITS = "101101000110";
+    const REPAIR_MS = 8000; // link auto-repair in ms
+    const PAYLOAD_SPEED = 0.5; // units per second
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020617);
+
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, 10, 22);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.7;
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambient);
+
+    const directional = new THREE.DirectionalLight(0xffffff, 1.0);
+    directional.position.set(8, 15, 10);
+    scene.add(directional);
+
+    const point = new THREE.PointLight(0x4f46e5, 0.9, 80);
+    point.position.set(-10, 5, -6);
+    scene.add(point);
+
+    // Node model
+    const nodes = [];
+    const links = [];
+    const nodeMeshes = [];
+    const linkLines = [];
+
+    const NODE_TYPES = ["browser", "edge", "cloud"];
+
+    function nodeColor(type, role) {
+      if (role === "client") return 0xf59e0b;
+      if (role === "orchestrator") return 0xf97316;
+      if (type === "browser") return 0x22c55e;
+      if (type === "edge") return 0x06b6d4;
+      if (type === "cloud") return 0x6366f1;
+      return 0x9ca3af;
+    }
+
+    function createNodes() {
+      const radius = 9;
+      const baseGeometry = new THREE.SphereGeometry(0.5, 24, 24);
+      const clientGeometry = new THREE.SphereGeometry(0.7, 24, 24);
+      const orchGeometry = new THREE.SphereGeometry(0.9, 24, 24);
+
+      // Create a client node
+      nodes.push({
+        id: "client",
+        type: "browser",
+        role: "client",
+        capacity: 3,
+        latency: 1,
+        state: "idle",
+        position: new THREE.Vector3(-6, 0, 0),
+        mesh: null,
+      });
+
+      // Orchestrator node
+      nodes.push({
+        id: "orchestrator",
+        type: "edge",
+        role: "orchestrator",
+        capacity: 5,
+        latency: 2,
+        state: "idle",
+        position: new THREE.Vector3(0, 2.5, 0),
+        mesh: null,
+      });
+
+      // A "service" cloud node (destination)
+      nodes.push({
+        id: "service",
+        type: "cloud",
+        role: "service",
+        capacity: 6,
+        latency: 3,
+        state: "idle",
+        position: new THREE.Vector3(6, 0, 0),
+        mesh: null,
+      });
+
+      // Additional heterogeneous nodes arranged roughly in a sphere
+      const extraCount = 14;
+      for (let i = 0; i < extraCount; i++) {
+        const t = NODE_TYPES[i % NODE_TYPES.length];
+        const phi = Math.acos(2 * Math.random() - 1);
+        const theta = 2 * Math.PI * Math.random();
+        const r = radius * (0.6 + 0.4 * Math.random());
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = r * Math.sin(phi) * Math.sin(theta) * 0.6;
+        const z = r * Math.cos(phi);
+
+        nodes.push({
+          id: "node-" + i,
+          type: t,
+          role: "normal",
+          capacity: 2 + Math.floor(Math.random() * 4),
+          latency: 1 + Math.floor(Math.random() * 4),
+          state: "idle",
+          position: new THREE.Vector3(x, y, z),
+          mesh: null,
+        });
+      }
+
+      // Create meshes
+      nodes.forEach((node) => {
+        const geom =
+          node.role === "client"
+            ? clientGeometry
+            : node.role === "orchestrator"
+            ? orchGeometry
+            : node.role === "service"
+            ? orchGeometry
+            : baseGeometry;
+
+        const mat = new THREE.MeshStandardMaterial({
+          color: nodeColor(node.type, node.role),
+          emissive:
+            node.role === "client" ||
+            node.role === "orchestrator" ||
+            node.role === "service"
+              ? new THREE.Color(nodeColor(node.type, node.role))
+              : new THREE.Color(0x000000),
+          emissiveIntensity:
+            node.role === "client" ||
+            node.role === "orchestrator" ||
+            node.role === "service"
+              ? 0.45
+              : 0.15,
+          roughness: 0.3,
+          metalness: 0.2,
+        });
+
+        const mesh = new THREE.Mesh(geom, mat);
+        mesh.position.copy(node.position);
+        scene.add(mesh);
+
+        node.mesh = mesh;
+        nodeMeshes.push(mesh);
+      });
+    }
+
+    function addLink(aIndex, bIndex) {
+      // Avoid duplicate links
+      for (let i = 0; i < links.length; i++) {
+        const l = links[i];
+        if (
+          (l.a === aIndex && l.b === bIndex) ||
+          (l.a === bIndex && l.b === aIndex)
+        ) {
+          return l;
+        }
+      }
+
+      const aPos = nodes[aIndex].position;
+      const bPos = nodes[bIndex].position;
+
+      const geometry = new THREE.BufferGeometry().setFromPoints([aPos, bPos]);
+      const material = new THREE.LineBasicMaterial({
+        color: 0x4b5563,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.75,
+      });
+      const line = new THREE.Line(geometry, material);
+      scene.add(line);
+
+      const link = {
+        a: aIndex,
+        b: bIndex,
+        line: line,
+        active: true,
+        disabledUntil: 0,
+        baseColor: 0x4b5563,
+      };
+
+      links.push(link);
+      linkLines.push(line);
+      return link;
+    }
+
+    function createInitialLinks() {
+      // Simple chain to ensure connectivity
+      for (let i = 0; i < nodes.length - 1; i++) {
+        addLink(i, i + 1);
+      }
+      // Some additional random cross links for redundancy
+      for (let i = 0; i < nodes.length; i++) {
+        if (Math.random() < 0.4) {
+          const j = Math.floor(Math.random() * nodes.length);
+          if (i !== j) addLink(i, j);
+        }
+      }
+    }
+
+    createNodes();
+    createInitialLinks();
+
+    const clientIndex = nodes.findIndex((n) => n.role === "client");
+    const serviceIndex = nodes.findIndex((n) => n.id === "service");
+
+    // Raycaster for interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    // Link cutting and creation
+    let linkCreationSourceIndex = null;
+
+    function setStatus(text) {
+      if (statusEl) statusEl.textContent = text;
+    }
+
+    function onClick(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      mouse.set(x, y);
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersectsLinks = raycaster.intersectObjects(linkLines, false);
+      const intersectsNodes = raycaster.intersectObjects(nodeMeshes, false);
+
+      // Shift-click on node => create link
+      if (event.shiftKey && intersectsNodes.length > 0) {
+        const mesh = intersectsNodes[0].object;
+        const nodeIndex = nodes.findIndex((n) => n.mesh === mesh);
+
+        if (linkCreationSourceIndex === null) {
+          linkCreationSourceIndex = nodeIndex;
+          // Slightly scale the mesh to show selection
+          nodes[nodeIndex].mesh.scale.set(1.2, 1.2, 1.2);
+          setStatus("Link start selected. Shift-click another node to link.");
+        } else if (linkCreationSourceIndex !== nodeIndex) {
+          // Reset previous selection scale
+          nodes[linkCreationSourceIndex].mesh.scale.set(1, 1, 1);
+          addLink(linkCreationSourceIndex, nodeIndex);
+          linkCreationSourceIndex = null;
+          setStatus("New link created. Send data to see it used.");
+        } else {
+          // Clicking same node again cancels
+          nodes[linkCreationSourceIndex].mesh.scale.set(1, 1, 1);
+          linkCreationSourceIndex = null;
+          setStatus("Link creation cancelled.");
+        }
+
+        return;
+      }
+
+      // Normal click on link => cut / toggle it
+      if (intersectsLinks.length > 0) {
+        const line = intersectsLinks[0].object;
+        const link = links.find((l) => l.line === line);
+        if (link) {
+          if (link.active) {
+            // Cut the link
+            link.active = false;
+            link.disabledUntil = Date.now() + REPAIR_MS;
+            link.baseColor = 0x7f1d1d;
+            link.line.material.color.setHex(link.baseColor);
+            link.line.material.opacity = 0.9;
+            setStatus("Link cut. It will auto-repair shortly.");
+          } else {
+            // Manually repair early
+            link.active = true;
+            link.disabledUntil = 0;
+            link.baseColor = 0x4b5563;
+            link.line.material.color.setHex(link.baseColor);
+            link.line.material.opacity = 0.75;
+            setStatus("Link repaired.");
+          }
+        }
+        return;
+      }
+
+      // Normal click on node without shift: show simple info
+      if (intersectsNodes.length > 0) {
+        const mesh = intersectsNodes[0].object;
+        const nodeIndex = nodes.findIndex((n) => n.mesh === mesh);
+        if (nodeIndex >= 0) {
+          const n = nodes[nodeIndex];
+          setStatus(
+            (n.role === "client"
+              ? "Client node"
+              : n.role === "orchestrator"
+              ? "Orchestrator node"
+              : n.role === "service"
+              ? "Service node"
+              : n.type.charAt(0).toUpperCase() + n.type.slice(1) + " node") +
+              " – capacity " +
+              n.capacity +
+              ", latency " +
+              n.latency +
+              "."
+          );
+        }
+      }
+    }
+
+    renderer.domElement.addEventListener("click", onClick);
+
+    // Pathfinding
+    function linkIsActiveBetween(a, b) {
+      for (let i = 0; i < links.length; i++) {
+        const l = links[i];
+        if (
+          ((l.a === a && l.b === b) || (l.a === b && l.b === a)) &&
+          l.active
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function findPath(startIndex, endIndex) {
+      const queue = [startIndex];
+      const visited = new Array(nodes.length).fill(false);
+      const prev = new Array(nodes.length).fill(-1);
+      visited[startIndex] = true;
+
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (current === endIndex) break;
+
+        // Explore neighbors via active links
+        for (let i = 0; i < links.length; i++) {
+          const l = links[i];
+          if (!l.active) continue;
+
+          let neighbor = null;
+          if (l.a === current) neighbor = l.b;
+          else if (l.b === current) neighbor = l.a;
+
+          if (neighbor !== null && !visited[neighbor]) {
+            visited[neighbor] = true;
+            prev[neighbor] = current;
+            queue.push(neighbor);
+          }
+        }
+      }
+
+      if (!visited[endIndex]) return null;
+
+      const path = [];
+      let at = endIndex;
+      while (at !== -1) {
+        path.push(at);
+        at = prev[at];
+      }
+      path.reverse();
+      return path;
+    }
+
+    // Payload animation
+    const payloads = [];
+
+    function createPayload(path) {
+      const geom = new THREE.SphereGeometry(0.25, 20, 20);
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0xfacc15,
+        emissive: 0xfacc15,
+        emissiveIntensity: 0.9,
+        roughness: 0.2,
+        metalness: 0.0,
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      scene.add(mesh);
+
+      const startPos = nodes[path[0]].position;
+      mesh.position.copy(startPos);
+
+      return {
+        mesh: mesh,
+        path: path,
+        segmentIndex: 0,
+        progress: 0,
+        alive: true,
+        lastPathCheck: Date.now(),
+      };
+    }
+
+    function clearPayloads() {
+      payloads.forEach((p) => {
+        if (p.mesh && p.mesh.parent) {
+          p.mesh.parent.remove(p.mesh);
+        }
+      });
+      payloads.length = 0;
+    }
+
+    function resetNodeScales() {
+      nodes.forEach((n) => {
+        if (n.mesh) n.mesh.scale.set(1, 1, 1);
+      });
+    }
+
+    // Auto-repair links as time passes
+    function updateLinksAutoRepair() {
+      const now = Date.now();
+      for (let i = 0; i < links.length; i++) {
+        const l = links[i];
+        if (!l.active && l.disabledUntil > 0 && now >= l.disabledUntil) {
+          l.active = true;
+          l.disabledUntil = 0;
+          l.baseColor = 0x4b5563;
+          l.line.material.color.setHex(l.baseColor);
+          l.line.material.opacity = 0.75;
+          setStatus("A link has auto-repaired.");
+        }
+      }
+    }
+
+    // Highlight active links for moving payloads
+    function resetLinkColorsToBase() {
+      for (let i = 0; i < links.length; i++) {
+        const l = links[i];
+        l.line.material.color.setHex(l.baseColor);
+      }
+    }
+
+    function highlightLink(a, b) {
+      for (let i = 0; i < links.length; i++) {
+        const l = links[i];
+        if ((l.a === a && l.b === b) || (l.a === b && l.b === a)) {
+          l.line.material.color.setHex(0xfacc15);
+          break;
+        }
+      }
+    }
+
+    // Animation loop
+    let lastTime = performance.now();
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const delta = (now - lastTime) / 1000;
+      lastTime = now;
+
+      controls.update();
+      updateLinksAutoRepair();
+
+      // Reset link colors before highlighting
+      resetLinkColorsToBase();
+
+      // Update payloads
+      for (let i = payloads.length - 1; i >= 0; i--) {
+        const p = payloads[i];
+        if (!p.alive) continue;
+
+        const segIdx = p.segmentIndex;
+        if (segIdx >= p.path.length - 1) {
+          // Arrived
+          p.alive = false;
+          if (p.mesh && p.mesh.parent) {
+            p.mesh.parent.remove(p.mesh);
+          }
+          payloads.splice(i, 1);
+          setStatus(
+            "Transmission complete: 101101000110 delivered successfully."
+          );
+          continue;
+        }
+
+        const aIndex = p.path[segIdx];
+        const bIndex = p.path[segIdx + 1];
+
+        // At the start of a segment, ensure link is still active; if not, re-route
+        if (!linkIsActiveBetween(aIndex, bIndex)) {
+          const newPath = findPath(aIndex, serviceIndex);
+          if (!newPath) {
+            // Transmission failed
+            p.alive = false;
+            if (p.mesh && p.mesh.parent) {
+              p.mesh.parent.remove(p.mesh);
+            }
+            payloads.splice(i, 1);
+            setStatus(
+              "Transmission failed: network partitioned, no path for 101101000110."
+            );
+            continue;
+          } else {
+            // Replace remaining path from current node
+            p.path = newPath;
+            p.segmentIndex = 0;
+            p.progress = 0;
+            setStatus(
+              "Path broken. Re-routing 101101000110 through alternate links..."
+            );
+          }
+        }
+
+        const aPos = nodes[aIndex].position;
+        const bPos = nodes[bIndex].position;
+
+        p.progress += PAYLOAD_SPEED * delta;
+        if (p.progress >= 1) {
+          p.progress = 0;
+          p.segmentIndex += 1;
+        }
+
+        // Interpolate position
+        const pos = new THREE.Vector3().lerpVectors(aPos, bPos, p.progress);
+        p.mesh.position.copy(pos);
+
+        // Highlight the link currently used
+        highlightLink(aIndex, bIndex);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(animate);
+
+    // Resize handling
+    function onResize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w <= 0 || h <= 0) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    window.addEventListener("resize", onResize);
+
+    // Controls
+    if (sendBtn) {
+      sendBtn.addEventListener("click", function () {
+        clearPayloads();
+        resetNodeScales();
+
+        const path = findPath(clientIndex, serviceIndex);
+        if (!path) {
+          setStatus(
+            "No available path from client to service. Try repairing or creating links."
+          );
+          return;
+        }
+
+        const payload = createPayload(path);
+        payloads.push(payload);
+
+        setStatus(
+          "Sending 101101000110 from client to service (" +
+            path.length +
+            " hops)..."
+        );
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", function () {
+        controls.reset();
+        camera.position.set(0, 10, 22);
+        clearPayloads();
+        resetNodeScales();
+        setStatus("View reset. Ready.");
+      });
+    }
+
+    setStatus('Ready. Click "Send 101101000110" to start the simulation.');
+  })();
+</script>
