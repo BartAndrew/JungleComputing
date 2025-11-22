@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jungle Computing 6 - Mobile Edition</title>
+    <title>Jungle Computing 6 - Enhanced Messaging</title>
     <style>
         :root {
             --bg-color: #020617;
@@ -240,7 +240,7 @@
     <div id="canvas-container"></div>
 
     <div id="info-panel" class="ui-panel">
-        <h1>Jungle Computing 4</h1>
+        <h1>Jungle Computing 6</h1>
         <div style="margin-bottom: 10px;">
             <span id="status-dot" class="status-dot connecting"></span>
             <span id="status-text">Initializing...</span>
@@ -763,92 +763,76 @@
                         targets.push(n);
                     }
                 });
-            } else {
-                const t = state.graphNodes.get(data.toUserId);
-                if (t) targets.push(t);
-            }
+                const botCountVal = document.getElementById('bot-count-val');
+                const regenBtn = document.getElementById('regen-bots');
 
-            targets.forEach(t => {
-                const pkt = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
-                pkt.position.copy(sender.mesh.position);
-                scene.add(pkt);
-                state.packets.push({ mesh: pkt, start: sender.mesh.position.clone(), end: t.mesh.position.clone(), p: 0 });
-            });
-        }
+                modeSel.onchange = () => {
+                    state.mode = modeSel.value;
+                    if (state.mode === 'demo') {
+                        disconnect();
+                        setStatus('demo');
+                        state.realNodes = []; // Clear real nodes
+                        // Add self as local node
+                        state.realNodes.push({ userId: state.userId, instanceId: state.instanceId, nickname: state.nickname });
+                    } else {
+                        connect();
+                    }
+                    updateGraph();
+                };
 
-        // --- UI Controls ---
-        const modeSel = document.getElementById('sim-mode');
-        const botCountRange = document.getElementById('bot-count');
-        const botCountVal = document.getElementById('bot-count-val');
-        const regenBtn = document.getElementById('regen-bots');
+                botCountRange.oninput = () => {
+                    botCountVal.textContent = botCountRange.value;
+                };
 
-        modeSel.onchange = () => {
-            state.mode = modeSel.value;
-            if (state.mode === 'demo') {
-                disconnect();
-                setStatus('demo');
-                state.realNodes = []; // Clear real nodes
-                // Add self as local node
-                state.realNodes.push({ userId: state.userId, instanceId: state.instanceId, nickname: state.nickname });
-            } else {
-                connect();
-            }
-            updateGraph();
-        };
+                regenBtn.onclick = generateBots;
 
-        botCountRange.oninput = () => {
-            botCountVal.textContent = botCountRange.value;
-        };
+                // --- Loop ---
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
 
-        regenBtn.onclick = generateBots;
+                    // Packets
+                    for (let i = state.packets.length - 1; i >= 0; i--) {
+                        const p = state.packets[i];
+                        p.p += 0.02;
+                        if (p.p >= 1) {
+                            scene.remove(p.mesh);
+                            state.packets.splice(i, 1);
+                        } else {
+                            p.mesh.position.lerpVectors(p.start, p.end, p.p);
+                        }
+                    }
 
-        // --- Loop ---
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
+                    // Bot Traffic
+                    if (state.mode !== 'live') {
+                        simulateBotTraffic();
+                    }
 
-            // Packets
-            for (let i = state.packets.length - 1; i >= 0; i--) {
-                const p = state.packets[i];
-                p.p += 0.02;
-                if (p.p >= 1) {
-                    scene.remove(p.mesh);
-                    state.packets.splice(i, 1);
-                } else {
-                    p.mesh.position.lerpVectors(p.start, p.end, p.p);
+                    // Labels
+                    state.graphNodes.forEach(n => {
+                        if (n.label) {
+                            const tempV = n.mesh.position.clone();
+                            tempV.project(camera);
+                            const x = (tempV.x * .5 + .5) * container.clientWidth;
+                            const y = (tempV.y * -.5 + .5) * container.clientHeight;
+                            n.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
+                            n.label.style.zIndex = (-tempV.z * .5 + .5) * 100000 | 0;
+                        }
+                    });
+
+                    renderer.render(scene, camera);
                 }
-            }
 
-            // Bot Traffic
-            if (state.mode !== 'live') {
-                simulateBotTraffic();
-            }
+                window.onresize = () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                };
 
-            // Labels
-            state.graphNodes.forEach(n => {
-                if (n.label) {
-                    const tempV = n.mesh.position.clone();
-                    tempV.project(camera);
-                    const x = (tempV.x * .5 + .5) * container.clientWidth;
-                    const y = (tempV.y * -.5 + .5) * container.clientHeight;
-                    n.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
-                    n.label.style.zIndex = (-tempV.z * .5 + .5) * 100000 | 0;
-                }
-            });
-
-            renderer.render(scene, camera);
-        }
-
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
-
-        // Init
-        if (state.mode === 'live') connect();
-        generateBots();
-        animate();
+                // Init
+                if (state.mode === 'live') connect();
+                generateBots();
+                animate();
 
     </script>
 </body>
