@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Computing 3 - Real-Life Simulator</title>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+            --panel-border: rgba(56, 189, 248, 0.2);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-primary);
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .ui-panel {
+            position: absolute;
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #info-panel {
+            top: 20px;
+            left: 20px;
+            width: 280px;
+        }
+
+        #chat-panel {
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #legend-panel {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin: 0 0 10px 0;
+        }
+
+        p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0 0 5px 0;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .connected {
+            background-color: var(--success-color);
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        .connecting {
+            background-color: #eab308;
+        }
+
+        .disconnected {
+            background-color: var(--danger-color);
+        }
+
+        #chat-log {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--panel-border);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 10px 0;
+        }
+
+        .msg {
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .msg-time {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-right: 5px;
+        }
+
+        .msg-sender {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .msg-sender.self {
+            color: var(--success-color);
+        }
+
+        input,
+        select,
+        button {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .node-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -12px;
+            border: 1px solid var(--accent-color);
+        }
+    </style>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js" type="module"></script>
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="info-panel" class="ui-panel">
+        <h1>Jungle Computing 3</h1>
+        <div style="margin-bottom: 10px;">
+            <span id="status-dot" class="status-dot connecting"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+        <p><strong>You:</strong> <span id="my-nickname">...</span></p>
+        <p style="font-size: 0.75rem; margin-top: 10px;">
+            Open multiple tabs to see nodes.
+            <br>Left Click: Rotate | Right Click: Pan
+        </p>
+    </div>
+
+    <div id="chat-panel" class="ui-panel">
+        <div id="chat-log"></div>
+        <select id="chat-mode">
+            <option value="broadcast">Broadcast to All</option>
+        </select>
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="chat-input" placeholder="Message..." autocomplete="off">
+            <button id="send-btn" style="width: auto;">Send</button>
+        </div>
+    </div>
+
+    <div id="legend-panel" class="ui-panel">
+        <div class="legend-row">
+            <div class="legend-box" style="background: #22c55e;"></div>You (Center)
+        </div>
+        <div class="legend-row">
+            <div class="legend-box" style="background: #4ade80;"></div>Your Tabs
+        </div>
+        <div class="legend-row">
+            <div class="legend-box" style="background: #38bdf8;"></div>Others (Center)
+        </div>
+        <div class="legend-row">
+            <div class="legend-box" style="background: #94a3b8;"></div>Other Tabs
+        </div>
+    </div>
+
+    <script type="module">
+        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        const WS_URL = "ws://localhost:8080";
+
+        // State
+        const state = {
+            userId: localStorage.getItem('jc3_userId') || generateUUID(),
+            nickname: localStorage.getItem('jc3_nickname') || generateNickname(),
+            instanceId: generateUUID(),
+            nodes: [],
+            graphNodes: new Map(), // id -> { mesh, label, data }
+            links: [],
+            packets: []
+        };
+
+        // Persist Identity
+        localStorage.setItem('jc3_userId', state.userId);
+        localStorage.setItem('jc3_nickname', state.nickname);
+        document.getElementById('my-nickname').textContent = state.nickname;
+
+        // --- Utils ---
+        function generateUUID() { return Math.random().toString(36).substr(2, 9); }
+        function generateNickname() {
+            const names = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Neon', 'Cyber', 'Quantum', 'Flux'];
+            const suffix = Math.floor(Math.random() * 1000);
+            return names[Math.floor(Math.random() * names.length)] + '-' + suffix;
+        }
+
+        // --- Three.js ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020617, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 30, 50);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+
+        // Helpers
+        const grid = new THREE.PolarGridHelper(50, 16, 8, 64, 0x1e293b, 0x0f172a);
+        scene.add(grid);
+        const axes = new THREE.AxesHelper(5);
+        scene.add(axes);
+
+        // Lights
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dl = new THREE.DirectionalLight(0xffffff, 1);
+        dl.position.set(10, 20, 10);
+        scene.add(dl);
+        const pl = new THREE.PointLight(0x38bdf8, 2, 50);
+        pl.position.set(0, 5, 0);
+        scene.add(pl);
+
+        // --- WebSocket ---
+        let ws;
+        function connect() {
+            ws = new WebSocket(WS_URL);
+            ws.onopen = () => {
+                setStatus('connected');
+                ws.send(JSON.stringify({
+                    type: 'join',
+                    userId: state.userId,
+                    instanceId: state.instanceId,
+                    nickname: state.nickname
+                }));
+            };
+            ws.onmessage = e => handleMessage(JSON.parse(e.data));
+            ws.onclose = () => {
+                setStatus('disconnected');
+                setTimeout(connect, 2000);
+            };
+        }
+
+        function setStatus(s) {
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            dot.className = 'status-dot ' + s;
+            txt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        function handleMessage(data) {
+            if (data.type === 'presence') updateGraph(data.nodes);
+            if (data.type === 'chat') receiveChat(data);
+        }
+
+        // --- Graph Logic ---
+        const geoUser = new THREE.SphereGeometry(2, 32, 32);
+        const geoInst = new THREE.SphereGeometry(0.8, 16, 16);
+        const matSelf = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.5 });
+        const matOther = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0369a1, emissiveIntensity: 0.5 });
+        const matInstSelf = new THREE.MeshStandardMaterial({ color: 0x4ade80 });
+        const matInstOther = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+
+        function updateGraph(nodes) {
+            console.log("Updating graph with nodes:", nodes.length);
+            state.nodes = nodes;
+
+            // 1. Group by User
+            const users = new Map();
+            const activeIds = new Set();
+
+            nodes.forEach(n => {
+                activeIds.add(n.instanceId);
+                activeIds.add(n.userId); // CRITICAL FIX: Keep User IDs active
+
+                if (!users.has(n.userId)) {
+                    users.set(n.userId, { ...n, instances: [] });
+                }
+                users.get(n.userId).instances.push(n);
+            });
+
+            // 2. Cleanup Stale
+            for (const [id, node] of state.graphNodes) {
+                if (!activeIds.has(id)) {
+                    scene.remove(node.mesh);
+                    if (node.label) node.label.remove();
+                    state.graphNodes.delete(id);
+                }
+            }
+
+            // 3. Create/Update
+            const userCount = users.size;
+            const radius = Math.max(15, userCount * 5);
+            let idx = 0;
+
+            for (const [userId, user] of users) {
+                const angle = (idx / userCount) * Math.PI * 2;
+                const ux = Math.cos(angle) * radius;
+                const uz = Math.sin(angle) * radius;
+                const userPos = new THREE.Vector3(ux, 0, uz);
+
+                // User Node (Center)
+                if (!state.graphNodes.has(userId)) {
+                    createNode(userId, 'user', user.userId === state.userId, user.nickname, userPos);
+                } else {
+                    // Update position if needed (simple lerp could be added here)
+                    state.graphNodes.get(userId).mesh.position.copy(userPos);
+                }
+
+                // Instance Nodes (Satellites)
+                user.instances.forEach((inst, i) => {
+                    const iAngle = (i / user.instances.length) * Math.PI * 2;
+                    const iRad = 4;
+                    const ix = ux + Math.cos(iAngle) * iRad;
+                    const iz = uz + Math.sin(iAngle) * iRad;
+                    const instPos = new THREE.Vector3(ix, 0, iz);
+
+                    if (!state.graphNodes.has(inst.instanceId)) {
+                        createNode(inst.instanceId, 'instance', inst.userId === state.userId, 'Tab', instPos);
+                    } else {
+                        state.graphNodes.get(inst.instanceId).mesh.position.copy(instPos);
+                    }
+                });
+                idx++;
+            }
+
+            // 4. Links
+            state.links.forEach(l => scene.remove(l));
+            state.links = [];
+
+            users.forEach(user => {
+                const uNode = state.graphNodes.get(user.userId);
+                if (!uNode) return;
+
+                user.instances.forEach(inst => {
+                    const iNode = state.graphNodes.get(inst.instanceId);
+                    if (iNode) {
+                        const pts = [uNode.mesh.position, iNode.mesh.position];
+                        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                        const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.4 }));
+                        scene.add(line);
+                        state.links.push(line);
+                    }
+                });
+            });
+
+            updateDMList(users);
+        }
+
+        function createNode(id, type, isSelf, labelText, pos) {
+            const isUser = type === 'user';
+            const geo = isUser ? geoUser : geoInst;
+            let mat;
+            if (isSelf) mat = isUser ? matSelf : matInstSelf;
+            else mat = isUser ? matOther : matInstOther;
+
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.copy(pos);
+            scene.add(mesh);
+
+            const label = document.createElement('div');
+            label.className = 'node-label';
+            label.textContent = labelText;
+            document.body.appendChild(label);
+
+            state.graphNodes.set(id, { mesh, label, type, isSelf });
+        }
+
+        function updateDMList(users) {
+            const sel = document.getElementById('chat-mode');
+            const current = sel.value;
+            sel.innerHTML = '<option value="broadcast">Broadcast to All</option>';
+            users.forEach(u => {
+                if (u.userId !== state.userId) {
+                    const opt = document.createElement('option');
+                    opt.value = u.userId;
+                    opt.textContent = `DM: ${u.nickname}`;
+                    sel.appendChild(opt);
+                }
+            });
+            sel.value = current;
+        }
+
+        // --- Chat ---
+        const log = document.getElementById('chat-log');
+        const input = document.getElementById('chat-input');
+        const btn = document.getElementById('send-btn');
+
+        function send() {
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const mode = document.getElementById('chat-mode').value;
+            const msg = {
+                type: 'chat',
+                mode: mode === 'broadcast' ? 'broadcast' : 'direct',
+                toUserId: mode === 'broadcast' ? null : mode,
+                from: { userId: state.userId, nickname: state.nickname },
+                text: txt
+            };
+            ws.send(JSON.stringify(msg));
+            input.value = '';
+        }
+
+        btn.onclick = send;
+        input.onkeypress = e => e.key === 'Enter' && send();
+
+        function receiveChat(data) {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            const time = new Date().toLocaleTimeString();
+            const isSelf = data.from.userId === state.userId;
+            div.innerHTML = `<span class="msg-time">[${time}]</span><span class="msg-sender ${isSelf ? 'self' : ''}">${data.from.nickname}</span>: ${data.text}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+
+            // Packet Animation
+            const sender = state.graphNodes.get(data.from.userId); // User Node
+            if (!sender) return;
+
+            const targets = [];
+            if (data.mode === 'broadcast') {
+                state.graphNodes.forEach((n, id) => {
+                    if (n.type === 'user' && id !== data.from.userId) targets.push(n);
+                });
+            } else {
+                const t = state.graphNodes.get(data.toUserId); // Target User ID
+                if (t) targets.push(t);
+            }
+
+            targets.forEach(t => {
+                const pkt = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+                pkt.position.copy(sender.mesh.position);
+                scene.add(pkt);
+                state.packets.push({ mesh: pkt, start: sender.mesh.position.clone(), end: t.mesh.position.clone(), p: 0 });
+            });
+        }
+
+        // --- Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            // Packets
+            for (let i = state.packets.length - 1; i >= 0; i--) {
+                const pkt = state.packets[i];
+                pkt.p += 0.02;
+                if (pkt.p >= 1) {
+                    scene.remove(pkt.mesh);
+                    state.packets.splice(i, 1);
+                } else {
+                    pkt.mesh.position.lerpVectors(pkt.start, pkt.end, pkt.p);
+                }
+            }
+
+            // Labels
+            state.graphNodes.forEach(n => {
+                if (n.label) {
+                    const v = n.mesh.position.clone().project(camera);
+                    const x = (v.x * .5 + .5) * container.clientWidth;
+                    const y = (v.y * -.5 + .5) * container.clientHeight;
+                    n.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
+                    n.label.style.display = v.z > 1 ? 'none' : 'block';
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        connect();
+        animate();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Computing 2 - Real-Life Simulator</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --panel-border: rgba(148, 163, 184, 0.2);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-primary);
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* UI Overlay */
+        .ui-panel {
+            position: absolute;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        #info-panel {
+            top: 20px;
+            left: 20px;
+            max-width: 300px;
+        }
+
+        #chat-panel {
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #legend-panel {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 8px;
+        }
+
+        p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background-color: var(--text-secondary);
+        }
+
+        .status-connected {
+            background-color: var(--success-color);
+        }
+
+        .status-connecting {
+            background-color: #eab308;
+        }
+
+        .status-disconnected {
+            background-color: var(--danger-color);
+        }
+
+        /* Chat Styles */
+        #chat-log {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding-right: 4px;
+            font-size: 0.9rem;
+        }
+
+        #chat-log::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chat-log::-webkit-scrollbar-thumb {
+            background-color: var(--panel-border);
+            border-radius: 3px;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        .chat-time {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-right: 6px;
+        }
+
+        .chat-sender {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .chat-sender.self {
+            color: var(--success-color);
+        }
+
+        .chat-text {
+            color: var(--text-primary);
+        }
+
+        .chat-mode-direct {
+            font-style: italic;
+            color: #a78bfa;
+        }
+
+        .chat-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        input,
+        select,
+        button {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background: var(--accent-color);
+            color: #0f172a;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Legend */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        /* Node Labels */
+        .node-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            pointer-events: none;
+            user-select: none;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            margin-top: -10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #chat-panel {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 40%;
+                border-radius: 12px 12px 0 0;
+                border-bottom: none;
+            }
+
+            #info-panel {
+                width: auto;
+                right: 20px;
+            }
+
+            #legend-panel {
+                display: none;
+            }
+        }
+    </style>
+    <!-- Three.js and OrbitControls -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js" type="module"></script>
+</head>
+
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="info-panel" class="ui-panel">
+        <h1>Jungle Computing 2</h1>
+        <div id="connection-status">
+            <span class="status-indicator status-connecting"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+        <p><strong>Identity:</strong> <span id="my-nickname">...</span></p>
+        <p>Open this page in multiple tabs to see the network grow.</p>
+    </div>
+
+    <div id="chat-panel" class="ui-panel">
+        <h2>Network Chat</h2>
+        <div id="chat-log">
+            <div class="chat-message">
+                <span class="chat-time">System</span>
+                <span class="chat-text">Welcome to the jungle!</span>
+            </div>
+        </div>
+        <div class="chat-controls">
+            <select id="chat-mode">
+                <option value="broadcast">Broadcast (All)</option>
+                <!-- DM options will be added here dynamically -->
+            </select>
+            <div class="input-group">
+                <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button id="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="legend-panel" class="ui-panel">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #22c55e;"></div>
+            <span>You (Main)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #4ade80;"></div>
+            <span>You (Instance)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #38bdf8;"></div>
+            <span>Others (Main)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #94a3b8;"></div>
+            <span>Others (Instance)</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        // --- Configuration ---
+        const WS_URL = "ws://localhost:8080"; // CHANGE THIS FOR DEPLOYMENT
+
+        // --- State ---
+        const state = {
+            userId: null,
+            instanceId: null,
+            nickname: null,
+            connected: false,
+            nodes: [], // List of all nodes from server presence
+            graphNodes: new Map(), // Map<id, { mesh, label, data }>
+            links: [], // Array of link objects
+            packets: [] // Array of active packet animations
+        };
+
+        // --- Identity Management ---
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function generateNickname() {
+            const adjectives = ['Green', 'Azure', 'Crimson', 'Golden', 'Silent', 'Swift', 'Neon', 'Cyber'];
+            const nouns = ['Falcon', 'Fox', 'Wolf', 'Eagle', 'Tiger', 'Ghost', 'Spark', 'Storm'];
+            return adjectives[Math.floor(Math.random() * adjectives.length)] + ' ' +
+                nouns[Math.floor(Math.random() * nouns.length)];
+        }
+
+        function initIdentity() {
+            // Persistent User ID
+            let storedUserId = localStorage.getItem('jc2_userId');
+            let storedNickname = localStorage.getItem('jc2_nickname');
+
+            if (!storedUserId) {
+                storedUserId = generateUUID();
+                localStorage.setItem('jc2_userId', storedUserId);
+            }
+            if (!storedNickname) {
+                storedNickname = generateNickname();
+                localStorage.setItem('jc2_nickname', storedNickname);
+            }
+
+            state.userId = storedUserId;
+            state.nickname = storedNickname;
+
+            // Ephemeral Instance ID (per tab)
+            state.instanceId = generateUUID();
+
+            document.getElementById('my-nickname').textContent = state.nickname;
+        }
+
+        initIdentity();
+
+        // --- Three.js Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0f172a, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 20, 40);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 100;
+        controls.minDistance = 5;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 2);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0x38bdf8, 1, 100);
+        pointLight.position.set(0, 10, 0);
+        scene.add(pointLight);
+
+        // --- WebSocket Logic ---
+        let ws;
+        let reconnectTimeout;
+
+        function connect() {
+            updateStatus('connecting');
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                updateStatus('connected');
+                // Send Join Message
+                ws.send(JSON.stringify({
+                    type: 'join',
+                    userId: state.userId,
+                    instanceId: state.instanceId,
+                    nickname: state.nickname
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    console.error("Error parsing WS message", e);
+                }
+            };
+
+            ws.onclose = () => {
+                updateStatus('disconnected');
+                // Exponential backoff or simple retry
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = setTimeout(connect, 3000);
+            };
+
+            ws.onerror = (err) => {
+                console.error("WS Error", err);
+                ws.close();
+            };
+        }
+
+        function updateStatus(status) {
+            const indicator = document.querySelector('.status-indicator');
+            const text = document.getElementById('status-text');
+
+            indicator.className = 'status-indicator';
+
+            if (status === 'connected') {
+                indicator.classList.add('status-connected');
+                text.textContent = 'Connected';
+                state.connected = true;
+            } else if (status === 'connecting') {
+                indicator.classList.add('status-connecting');
+                text.textContent = 'Connecting...';
+                state.connected = false;
+            } else {
+                indicator.classList.add('status-disconnected');
+                text.textContent = 'Disconnected';
+                state.connected = false;
+            }
+        }
+
+        function handleMessage(data) {
+            switch (data.type) {
+                case 'presence':
+                    updatePresence(data.nodes);
+                    break;
+                case 'chat':
+                    receiveChat(data);
+                    break;
+            }
+        }
+
+        // --- Visualization Logic ---
+
+        // Materials
+        const matUserSelf = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.3, metalness: 0.7, emissive: 0x15803d, emissiveIntensity: 0.2 });
+        const matInstanceSelf = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.5, metalness: 0.5 });
+        const matUserOther = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3, metalness: 0.7, emissive: 0x0369a1, emissiveIntensity: 0.2 });
+        const matInstanceOther = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.5, metalness: 0.5 });
+        const matLink = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.3 });
+        const matPacket = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+
+        // Geometries
+        const geoUser = new THREE.SphereGeometry(1.5, 32, 32);
+        const geoInstance = new THREE.SphereGeometry(0.6, 16, 16);
+        const geoPacket = new THREE.SphereGeometry(0.3, 8, 8);
+
+        function updatePresence(nodes) {
+            state.nodes = nodes;
+
+            // 1. Identify active IDs
+            const activeIds = new Set();
+            const users = new Map(); // userId -> { nickname, instances: [] }
+
+            // Group by user
+            nodes.forEach(node => {
+                const uniqueId = node.instanceId; // Unique ID for every node in graph
+                activeIds.add(uniqueId);
+
+                if (!users.has(node.userId)) {
+                    users.set(node.userId, {
+                        userId: node.userId,
+                        nickname: node.nickname,
+                        instances: []
+                    });
+                }
+                users.get(node.userId).instances.push(node);
+            });
+
+            // 2. Remove stale nodes
+            for (const [id, node] of state.graphNodes) {
+                if (!activeIds.has(id)) {
+                    scene.remove(node.mesh);
+                    if (node.label && node.label.parentNode) {
+                        node.label.parentNode.removeChild(node.label);
+                    }
+                    state.graphNodes.delete(id);
+                }
+            }
+
+            // 3. Create/Update nodes
+            // Layout strategy: Users in a circle, instances clustered around them
+            const userCount = users.size;
+            const userRadius = Math.max(10, userCount * 3);
+            let userIndex = 0;
+
+            for (const [userId, userData] of users) {
+                // Calculate user position
+                const angle = (userIndex / userCount) * Math.PI * 2;
+                const userX = Math.cos(angle) * userRadius;
+                const userZ = Math.sin(angle) * userRadius;
+                const userPos = new THREE.Vector3(userX, 0, userZ);
+
+                // Process instances
+                userData.instances.forEach((instance, i) => {
+                    const isSelf = instance.userId === state.userId;
+                    const isMainInstance = i === 0; // Arbitrarily pick first as "main" for visual simplicity if we wanted, but let's just cluster them.
+
+                    // Actually, let's make the "User Node" concept purely visual or implicit?
+                    // The spec says: "User node: Larger sphere... Instance nodes: Smaller spheres clustered"
+                    // But the server returns a flat list of instances.
+                    // Let's treat the first instance found as the "Main" visual node for the user, 
+                    // OR create a virtual center node. 
+                    // Spec says: "Each browser tab... becomes a node... User node... Instance nodes..."
+                    // This implies a hierarchy. 
+                    // Let's visualize the User as a central point (maybe not a network node itself if it doesn't have an ID, or just the first instance).
+                    // To stick to the spec "Each browser tab... becomes a node", but also "User node... Instance nodes",
+                    // I will visualize the User as a Group center, and instances around it.
+                    // Wait, "Each user is a main node". 
+                    // Let's create a visual node for the User (even if not a socket) and link instances to it.
+                    // But for routing, we need IDs. 
+                    // Let's use `userId` as the ID for the "User Node" and `instanceId` for "Instance Node".
+
+                    // Ensure User Node exists
+                    if (!state.graphNodes.has(userId)) {
+                        createNode(userId, {
+                            ...instance,
+                            type: 'user',
+                            isSelf: isSelf,
+                            position: userPos
+                        });
+                    }
+
+                    // Ensure Instance Node exists
+                    if (!state.graphNodes.has(instance.instanceId)) {
+                        // Position relative to user
+                        const instAngle = (i / userData.instances.length) * Math.PI * 2;
+                        const instRadius = 3;
+                        const instX = userPos.x + Math.cos(instAngle) * instRadius;
+                        const instZ = userPos.z + Math.sin(instAngle) * instRadius;
+
+                        createNode(instance.instanceId, {
+                            ...instance,
+                            type: 'instance',
+                            isSelf: isSelf,
+                            position: new THREE.Vector3(instX, 0, instZ)
+                        });
+                    }
+                });
+
+                userIndex++;
+            }
+
+            // 4. Update Links
+            // Clear old links
+            state.links.forEach(link => scene.remove(link));
+            state.links = [];
+
+            // Rebuild links
+            for (const [userId, userData] of users) {
+                const userNode = state.graphNodes.get(userId);
+                if (!userNode) continue;
+
+                userData.instances.forEach(inst => {
+                    const instNode = state.graphNodes.get(inst.instanceId);
+                    if (instNode) {
+                        createLink(userNode.position, instNode.position);
+                    }
+                });
+            }
+
+            // Update DM dropdown
+            updateDMOptions(users);
+        }
+
+        function createNode(id, data) {
+            const isUser = data.type === 'user';
+            const geometry = isUser ? geoUser : geoInstance;
+            let material;
+
+            if (data.isSelf) {
+                material = isUser ? matUserSelf : matInstanceSelf;
+            } else {
+                material = isUser ? matUserOther : matInstanceOther;
+            }
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(data.position);
+            scene.add(mesh);
+
+            // Label
+            const label = document.createElement('div');
+            label.className = 'node-label';
+            label.textContent = isUser ? data.nickname : 'Tab';
+            document.body.appendChild(label);
+
+            state.graphNodes.set(id, {
+                id: id,
+                mesh: mesh,
+                label: label,
+                data: data,
+                position: mesh.position
+            });
+        }
+
+        function createLink(pos1, pos2) {
+            const geometry = new THREE.BufferGeometry().setFromPoints([pos1, pos2]);
+            const line = new THREE.Line(geometry, matLink);
+            scene.add(line);
+            state.links.push(line);
+        }
+
+        function updateDMOptions(users) {
+            const select = document.getElementById('chat-mode');
+            // Keep first option (Broadcast)
+            select.length = 1;
+
+            for (const [userId, userData] of users) {
+                if (userId !== state.userId) {
+                    const option = document.createElement('option');
+                    option.value = userId;
+                    option.textContent = `DM: ${userData.nickname}`;
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        // --- Chat Logic ---
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatLog = document.getElementById('chat-log');
+        const chatMode = document.getElementById('chat-mode');
+
+        function sendChat() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            const mode = chatMode.value === 'broadcast' ? 'broadcast' : 'direct';
+            const msg = {
+                type: 'chat',
+                mode: mode,
+                from: { userId: state.userId, instanceId: state.instanceId, nickname: state.nickname },
+                messageId: generateUUID(),
+                text: text,
+                // Simple "encryption" (Base64)
+                ciphertext: btoa(text),
+                encrypted: true
+            };
+
+            if (mode === 'direct') {
+                msg.toUserId = chatMode.value;
+                msg.toInstanceId = null; // Send to all instances of target
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(msg));
+                chatInput.value = '';
+            }
+        }
+
+        sendBtn.addEventListener('click', sendChat);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+
+        function receiveChat(data) {
+            // UI Log
+            const div = document.createElement('div');
+            div.className = 'chat-message';
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const isSelf = data.from.userId === state.userId;
+            const senderName = isSelf ? 'You' : data.from.nickname;
+            const modeLabel = data.mode === 'direct' ? '(Direct)' : '';
+
+            div.innerHTML = `
+                <span class="chat-time">[${time}]</span>
+                <span class="chat-sender ${isSelf ? 'self' : ''}">${senderName}</span>
+                ${modeLabel ? `<span class="chat-mode-direct">${modeLabel}</span>` : ''}: 
+                <span class="chat-text">${data.text}</span>
+            `;
+
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            // Animation
+            spawnPackets(data);
+        }
+
+        // --- Animation Logic ---
+        function spawnPackets(data) {
+            // Find sender position (User Node)
+            const senderNode = state.graphNodes.get(data.from.userId);
+            if (!senderNode) return;
+
+            const targets = [];
+
+            if (data.mode === 'broadcast') {
+                // Send to all other User Nodes
+                for (const [id, node] of state.graphNodes) {
+                    if (node.data.type === 'user' && id !== data.from.userId) {
+                        targets.push(node);
+                    }
+                }
+            } else if (data.mode === 'direct') {
+                // Send to target User Node
+                const targetNode = state.graphNodes.get(data.toUserId);
+                if (targetNode) {
+                    targets.push(targetNode);
+                }
+            }
+
+            targets.forEach(target => {
+                const mesh = new THREE.Mesh(geoPacket, matPacket);
+                mesh.position.copy(senderNode.position);
+                scene.add(mesh);
+
+                state.packets.push({
+                    mesh: mesh,
+                    start: senderNode.position.clone(),
+                    end: target.position.clone(),
+                    progress: 0,
+                    speed: 1.0 + Math.random() * 0.5 // Randomize speed slightly
+                });
+            });
+        }
+
+        function animatePackets(delta) {
+            for (let i = state.packets.length - 1; i >= 0; i--) {
+                const packet = state.packets[i];
+                packet.progress += delta * packet.speed;
+
+                if (packet.progress >= 1) {
+                    scene.remove(packet.mesh);
+                    state.packets.splice(i, 1);
+                } else {
+                    packet.mesh.position.lerpVectors(packet.start, packet.end, packet.progress);
+                }
+            }
+        }
+
+        function updateLabels() {
+            for (const node of state.graphNodes.values()) {
+                if (node.label) {
+                    const tempV = node.position.clone();
+                    tempV.project(camera);
+
+                    const x = (tempV.x * .5 + .5) * container.clientWidth;
+                    const y = (tempV.y * -.5 + .5) * container.clientHeight;
+
+                    node.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
+
+                    // Hide if behind camera
+                    if (tempV.z > 1) {
+                        node.label.style.display = 'none';
+                    } else {
+                        node.label.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        // --- Main Loop ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            controls.update();
+            animatePackets(delta);
+            updateLabels();
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start
+        connect();
+        animate();
+
+    </script>
+</body>
+
+</html>
