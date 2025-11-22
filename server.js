@@ -1,18 +1,24 @@
 const WebSocket = require('ws');
 
 const PORT = 8080;
-const wss = new WebSocket.Server({ port: PORT });
+const HOST = '0.0.0.0'; // Listen on all interfaces
+
+const wss = new WebSocket.Server({ host: HOST, port: PORT });
 
 // Store connected clients: Map<WebSocket, ClientData>
-// ClientData: { userId, instanceId, nickname, socket }
 const clients = new Map();
 
-console.log(`Jungle Computing 3 Server started on port ${PORT}`);
+console.log(`--------------------------------------------------`);
+console.log(`Jungle Computing Server Running`);
+console.log(`Listening on: ws://${HOST}:${PORT}`);
+console.log(`Access via:   ws://127.0.0.1:${PORT} (Local)`);
+console.log(`--------------------------------------------------`);
 
-wss.on('connection', (ws) => {
-    console.log('New client connected');
+wss.on('connection', (ws, req) => {
+    const ip = req.socket.remoteAddress;
+    console.log(`[${new Date().toLocaleTimeString()}] New connection from ${ip}`);
 
-    // Initialize with temporary data
+    // Initialize
     clients.set(ws, {
         userId: null,
         instanceId: null,
@@ -25,18 +31,18 @@ wss.on('connection', (ws) => {
             const data = JSON.parse(message);
             handleMessage(ws, data);
         } catch (e) {
-            console.error('Invalid JSON received:', e);
+            console.error('Invalid JSON:', e);
         }
     });
 
     ws.on('close', () => {
-        console.log('Client disconnected');
+        console.log(`[${new Date().toLocaleTimeString()}] Client disconnected`);
         clients.delete(ws);
         broadcastPresence();
     });
 
     ws.on('error', (err) => {
-        console.error('WebSocket error:', err);
+        console.error('Client error:', err);
     });
 });
 
@@ -48,7 +54,7 @@ function handleMessage(ws, data) {
             client.userId = data.userId;
             client.instanceId = data.instanceId;
             client.nickname = data.nickname;
-            console.log(`User joined: ${client.nickname} (${client.userId})`);
+            console.log(`User Joined: ${client.nickname} (${client.userId})`);
             broadcastPresence();
             break;
 
@@ -75,7 +81,6 @@ function broadcastPresence() {
         nodes: nodes
     });
 
-    console.log(`Broadcasting presence: ${nodes.length} nodes`);
     broadcast(message);
 }
 
@@ -85,22 +90,11 @@ function handleChat(senderWs, data) {
     if (data.mode === 'broadcast') {
         broadcast(payload);
     } else if (data.mode === 'direct') {
-        // Send to target(s)
+        // Direct Message Logic
         for (const client of clients.values()) {
-            if (client.userId === data.toUserId) {
+            if (client.userId === data.toUserId || client.userId === data.from.userId) {
                 if (client.socket.readyState === WebSocket.OPEN) {
                     client.socket.send(payload);
-                }
-            }
-        }
-        // Echo to sender's other instances
-        const sender = clients.get(senderWs);
-        if (sender && sender.userId) {
-            for (const client of clients.values()) {
-                if (client.userId === sender.userId) { // Send to ALL sender instances including self for simplicity in this version
-                    if (client.socket.readyState === WebSocket.OPEN) {
-                        client.socket.send(payload);
-                    }
                 }
             }
         }

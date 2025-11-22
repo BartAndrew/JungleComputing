@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Computing 5 - The Living Mesh</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.9);
+            --panel-border: rgba(148, 163, 184, 0.2);
+            --text-primary: #f1f5f9;
+            --accent-color: #38bdf8;
+            --busy-color: #ef4444;
+            --idle-color: #22c55e;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .ui-panel {
+            position: absolute;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        #control-panel {
+            top: 20px;
+            left: 20px;
+            width: 300px;
+        }
+
+        #stats-panel {
+            top: 20px;
+            right: 20px;
+            width: 250px;
+        }
+
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        button.job-btn {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: white;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stat-val {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .node-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -15px;
+            border: 1px solid var(--accent-color);
+            color: white;
+        }
+    </style>
+    <script src="three.min.js"></script>
+    <script src="OrbitControls.js"></script>
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="control-panel" class="ui-panel">
+        <h1>Jungle Computing 5</h1>
+        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 20px;">
+            Distributed Mesh Simulation. Nodes automatically form a P2P grid. Dispatch jobs to see the network compute.
+        </p>
+        <button class="job-btn" id="dispatch-btn">DISPATCH JOB</button>
+        <button id="add-nodes-btn">Add 10 Nodes</button>
+        <button id="reset-btn" style="background: #334155; color: #cbd5e1;">Reset Simulation</button>
+    </div>
+
+    <div id="stats-panel" class="ui-panel">
+        <h1>Network Stats</h1>
+        <div class="stat-row"><span>Nodes:</span> <span id="stat-nodes" class="stat-val">0</span></div>
+        <div class="stat-row"><span>Links:</span> <span id="stat-links" class="stat-val">0</span></div>
+        <div class="stat-row"><span>Active Jobs:</span> <span id="stat-jobs" class="stat-val">0</span></div>
+        <div class="stat-row"><span>Throughput:</span> <span id="stat-tps" class="stat-val">0 ops/s</span></div>
+    </div>
+
+    <script>
+        // --- Config ---
+        const LINK_DIST = 35;
+        const NODE_COUNT_INIT = 30;
+
+        // --- State ---
+        const state = {
+            nodes: [],
+            links: [],
+            packets: [],
+            jobs: 0,
+            processed: 0
+        };
+
+        // --- Three.js Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0f172a, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 60, 100);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.2;
+
+        // Environment
+        const grid = new THREE.GridHelper(200, 40, 0x1e293b, 0x0f172a);
+        scene.add(grid);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dl = new THREE.DirectionalLight(0xffffff, 1);
+        dl.position.set(50, 50, 50);
+        scene.add(dl);
+
+        // --- Logic ---
+
+        class Node {
+            constructor(id, pos) {
+                this.id = id;
+                this.pos = pos;
+                this.busyTimer = 0;
+                this.neighbors = [];
+
+                // Mesh
+                this.geo = new THREE.BoxGeometry(2, 2, 2);
+                this.mat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.2 });
+                this.mesh = new THREE.Mesh(this.geo, this.mat);
+                this.mesh.position.copy(pos);
+                scene.add(this.mesh);
+            }
+
+            update(delta) {
+                if (this.busyTimer > 0) {
+                    this.busyTimer -= delta;
+                    if (this.busyTimer <= 0) {
+                        this.setIdle();
+                        state.processed++;
+                    } else {
+                        // Pulse effect
+                        const s = 1 + Math.sin(Date.now() * 0.01) * 0.2;
+                        this.mesh.scale.set(s, s, s);
+                    }
+                }
+            }
+
+            setBusy(duration) {
+                this.busyTimer = duration;
+                this.mat.color.setHex(0xef4444);
+                this.mat.emissive.setHex(0x991b1b);
+                this.mat.emissiveIntensity = 0.8;
+            }
+
+            setIdle() {
+                this.busyTimer = 0;
+                this.mat.color.setHex(0x22c55e);
+                this.mat.emissive.setHex(0x15803d);
+                this.mat.emissiveIntensity = 0.2;
+                this.mesh.scale.set(1, 1, 1);
+            }
+        }
+
+        function initNodes(count) {
+            for (let i = 0; i < count; i++) {
+                const pos = new THREE.Vector3(
+                    (Math.random() - 0.5) * 120,
+                    2, // slightly above grid
+                    (Math.random() - 0.5) * 120
+                );
+                state.nodes.push(new Node(i, pos));
+            }
+            updateLinks();
+        }
+
+        function updateLinks() {
+            // Clear old
+            state.links.forEach(l => scene.remove(l));
+            state.links = [];
+            state.nodes.forEach(n => n.neighbors = []);
+
+            const matLine = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.15 });
+
+            for (let i = 0; i < state.nodes.length; i++) {
+                for (let j = i + 1; j < state.nodes.length; j++) {
+                    const n1 = state.nodes[i];
+                    const n2 = state.nodes[j];
+                    const dist = n1.pos.distanceTo(n2.pos);
+
+                    if (dist < LINK_DIST) {
+                        n1.neighbors.push(n2);
+                        n2.neighbors.push(n1);
+
+                        const geo = new THREE.BufferGeometry().setFromPoints([n1.pos, n2.pos]);
+                        const line = new THREE.Line(geo, matLine);
+                        scene.add(line);
+                        state.links.push(line);
+                    }
+                }
+            }
+
+            // Update Stats
+            document.getElementById('stat-nodes').textContent = state.nodes.length;
+            document.getElementById('stat-links').textContent = state.links.length;
+        }
+
+        function dispatchJob() {
+            // Pick a random "Master" node
+            const master = state.nodes[Math.floor(Math.random() * state.nodes.length)];
+            master.setBusy(0.5); // Master overhead
+            state.jobs++;
+
+            // Flood fill / Distribute tasks to neighbors
+            // Create packets traveling to neighbors
+            if (master.neighbors.length === 0) return;
+
+            master.neighbors.forEach(neighbor => {
+                createPacket(master, neighbor, () => {
+                    // On arrival
+                    neighbor.setBusy(2.0 + Math.random() * 2.0); // Process for 2-4s
+                });
+            });
+        }
+
+        function createPacket(startNode, endNode, onArrive) {
+            const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+            mesh.position.copy(startNode.pos);
+            scene.add(mesh);
+
+            state.packets.push({
+                mesh,
+                start: startNode.pos.clone(),
+                end: endNode.pos.clone(),
+                progress: 0,
+                speed: 0.02 + Math.random() * 0.01,
+                onArrive
+            });
+        }
+
+        // --- Loop ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            controls.update();
+
+            // Update Nodes
+            state.nodes.forEach(n => n.update(delta));
+
+            // Update Packets
+            for (let i = state.packets.length - 1; i >= 0; i--) {
+                const p = state.packets[i];
+                p.progress += p.speed;
+
+                if (p.progress >= 1) {
+                    scene.remove(p.mesh);
+                    if (p.onArrive) p.onArrive();
+                    state.packets.splice(i, 1);
+                } else {
+                    p.mesh.position.lerpVectors(p.start, p.end, p.progress);
+                }
+            }
+
+            // Stats
+            document.getElementById('stat-jobs').textContent = state.packets.length; // Approx active transport
+            document.getElementById('stat-tps').textContent = (state.processed / clock.elapsedTime).toFixed(1) + ' ops/s';
+
+            renderer.render(scene, camera);
+        }
+
+        // --- UI ---
+        document.getElementById('dispatch-btn').onclick = dispatchJob;
+        document.getElementById('add-nodes-btn').onclick = () => { initNodes(10); };
+        document.getElementById('reset-btn').onclick = () => {
+            state.nodes.forEach(n => scene.remove(n.mesh));
+            state.links.forEach(l => scene.remove(l));
+            state.packets.forEach(p => scene.remove(p.mesh));
+            state.nodes = [];
+            state.links = [];
+            state.packets = [];
+            state.processed = 0;
+            initNodes(NODE_COUNT_INIT);
+        };
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        // Start
+        initNodes(NODE_COUNT_INIT);
+        animate();
+
+    </script>
+</body>
+
+</html>
