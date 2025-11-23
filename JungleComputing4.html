@@ -1,856 +1,953 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jungle Computing 4 - Simulation Edition</title>
     <style>
-        :root {
-            --bg-color: #020617;
-            --panel-bg: rgba(15, 23, 42, 0.85);
-            --panel-border: rgba(56, 189, 248, 0.3);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-color: #38bdf8;
-            --success-color: #22c55e;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-        }
+      :root {
+        --bg-color: #020617;
+        --panel-bg: rgba(15, 23, 42, 0.85);
+        --panel-border: rgba(56, 189, 248, 0.3);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent-color: #38bdf8;
+        --success-color: #22c55e;
+        --danger-color: #ef4444;
+        --warning-color: hsl(323, 92%, 50%);
+      }
 
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-primary);
-        }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: var(--bg-color);
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text-primary);
+      }
 
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
+      #canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
 
-        .ui-panel {
-            position: absolute;
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--panel-border);
-            border-radius: 8px;
-            padding: 16px;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-            transition: all 0.3s ease;
-        }
+      .ui-panel {
+        position: absolute;
+        background: var(--panel-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 16px;
+        z-index: 10;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        transition: all 0.3s ease;
+      }
 
-        #info-panel {
-            top: 20px;
-            left: 20px;
-            width: 280px;
-        }
+      #info-panel {
+        top: 20px;
+        left: 20px;
+        width: 280px;
+      }
 
-        #sim-panel {
-            top: 20px;
-            left: 320px;
-            width: 280px;
-        }
+      #sim-panel {
+        top: 20px;
+        left: 320px;
+        width: 280px;
+      }
 
-        #chat-panel {
-            top: 20px;
-            right: 20px;
-            width: 320px;
-            height: calc(100% - 40px);
-            display: flex;
-            flex-direction: column;
-        }
+      #chat-panel {
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        height: calc(100% - 40px);
+        display: flex;
+        flex-direction: column;
+      }
 
-        #legend-panel {
-            bottom: 20px;
-            left: 20px;
-        }
+      #legend-panel {
+        bottom: 20px;
+        left: 20px;
+      }
 
-        h1 {
-            font-size: 1.1rem;
-            color: var(--accent-color);
-            margin: 0 0 10px 0;
-        }
+      h1 {
+        font-size: 1.1rem;
+        color: var(--accent-color);
+        margin: 0 0 10px 0;
+      }
 
-        h2 {
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            margin: 0 0 8px 0;
-            border-bottom: 1px solid var(--panel-border);
-            padding-bottom: 4px;
-        }
+      h2 {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin: 0 0 8px 0;
+        border-bottom: 1px solid var(--panel-border);
+        padding-bottom: 4px;
+      }
 
-        p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin: 0 0 5px 0;
-        }
+      p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0 0 5px 0;
+      }
 
-        .status-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
 
-        .connected {
-            background-color: var(--success-color);
-            box-shadow: 0 0 8px var(--success-color);
-        }
+      .connected {
+        background-color: var(--success-color);
+        box-shadow: 0 0 8px var(--success-color);
+      }
 
-        .connecting {
-            background-color: var(--warning-color);
-        }
+      .connecting {
+        background-color: var(--warning-color);
+      }
 
-        .disconnected {
-            background-color: var(--danger-color);
-        }
+      .disconnected {
+        background-color: var(--danger-color);
+      }
 
-        .demo-mode {
-            background-color: var(--accent-color);
-            box-shadow: 0 0 8px var(--accent-color);
-        }
+      .demo-mode {
+        background-color: var(--accent-color);
+        box-shadow: 0 0 8px var(--accent-color);
+      }
 
-        #chat-log {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            border-top: 1px solid var(--panel-border);
-            border-bottom: 1px solid var(--panel-border);
-            padding: 10px 0;
-        }
+      #chat-log {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        border-top: 1px solid var(--panel-border);
+        border-bottom: 1px solid var(--panel-border);
+        padding: 10px 0;
+      }
 
-        .msg {
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
+      .msg {
+        margin-bottom: 6px;
+        line-height: 1.4;
+      }
 
-        .msg-time {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            margin-right: 5px;
-        }
+      .msg-time {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        margin-right: 5px;
+      }
 
-        .msg-sender {
-            font-weight: bold;
-            color: var(--accent-color);
-        }
+      .msg-sender {
+        font-weight: bold;
+        color: var(--accent-color);
+      }
 
-        .msg-sender.self {
-            color: var(--success-color);
-        }
+      .msg-sender.self {
+        color: var(--success-color);
+      }
 
-        .msg-sender.bot {
-            color: var(--warning-color);
-        }
+      .msg-sender.bot {
+        color: var(--warning-color);
+      }
 
-        input,
-        select,
-        button,
-        input[type="range"] {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--panel-border);
-            color: white;
-            padding: 6px;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
+      input,
+      select,
+      button,
+      input[type="range"] {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--panel-border);
+        color: white;
+        padding: 6px;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+      }
 
-        button {
-            background: var(--accent-color);
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            padding: 8px;
-        }
+      button {
+        background: var(--accent-color);
+        color: black;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        padding: 8px;
+      }
 
-        button:hover {
-            background: #0ea5e9;
-        }
+      button:hover {
+        background: #0ea5e9;
+      }
 
-        button.secondary {
-            background: transparent;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-        }
+      button.secondary {
+        background: transparent;
+        border: 1px solid var(--accent-color);
+        color: var(--accent-color);
+      }
 
-        button.secondary:hover {
-            background: rgba(56, 189, 248, 0.1);
-        }
+      button.secondary:hover {
+        background: rgba(56, 189, 248, 0.1);
+      }
 
-        .control-group {
-            margin-bottom: 12px;
-        }
+      .control-group {
+        margin-bottom: 12px;
+      }
 
-        .control-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
+      .control-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
 
-        .legend-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
-        }
+      .legend-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+        font-size: 0.8rem;
+      }
 
-        .legend-box {
-            width: 12px;
-            height: 12px;
-            margin-right: 8px;
-            border-radius: 2px;
-        }
+      .legend-box {
+        width: 12px;
+        height: 12px;
+        margin-right: 8px;
+        border-radius: 2px;
+      }
 
-        .node-label {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            pointer-events: none;
-            transform: translate(-50%, -100%);
-            margin-top: -12px;
-            border: 1px solid var(--accent-color);
-        }
+      .node-label {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        pointer-events: none;
+        transform: translate(-50%, -100%);
+        margin-top: -12px;
+        border: 1px solid var(--accent-color);
+      }
     </style>
-    <script src="three.min.js"
-        onerror="document.getElementById('status-text').textContent = 'Error: Failed to load three.min.js'; document.getElementById('status-dot').className = 'status-dot disconnected';"></script>
-    <script src="OrbitControls.js"
-        onerror="document.getElementById('status-text').textContent = 'Error: Failed to load OrbitControls.js'; document.getElementById('status-dot').className = 'status-dot disconnected';"></script>
-</head>
+    <script
+      src="three.min.js"
+      onerror="document.getElementById('status-text').textContent = 'Error: Failed to load three.min.js'; document.getElementById('status-dot').className = 'status-dot disconnected';"
+    ></script>
+    <script
+      src="OrbitControls.js"
+      onerror="document.getElementById('status-text').textContent = 'Error: Failed to load OrbitControls.js'; document.getElementById('status-dot').className = 'status-dot disconnected';"
+    ></script>
+  </head>
 
-<body>
+  <body>
     <div id="canvas-container"></div>
 
     <div id="info-panel" class="ui-panel">
-        <h1>Jungle Computing 4</h1>
-        <div style="margin-bottom: 10px;">
-            <span id="status-dot" class="status-dot connecting"></span>
-            <span id="status-text">Initializing...</span>
-        </div>
-        <p><strong>You:</strong> <span id="my-nickname">...</span></p>
-        <p style="font-size: 0.75rem; margin-top: 10px;">
-            Left Click: Rotate | Right Click: Pan
-        </p>
+      <h1>Jungle Computing 4</h1>
+      <div style="margin-bottom: 10px">
+        <span id="status-dot" class="status-dot connecting"></span>
+        <span id="status-text">Initializing...</span>
+      </div>
+      <p><strong>You:</strong> <span id="my-nickname">...</span></p>
+      <p style="font-size: 0.75rem; margin-top: 10px">
+        Left Click: Rotate | Right Click: Pan
+      </p>
     </div>
 
     <div id="sim-panel" class="ui-panel">
-        <h2>Simulation Control</h2>
+      <h2>Simulation Control</h2>
 
-        <div class="control-group">
-            <div class="control-label">Mode</div>
-            <select id="sim-mode">
-                <option value="live">Live (Server)</option>
-                <option value="demo">Demo (Offline)</option>
-                <option value="hybrid">Hybrid (Live + Bots)</option>
-            </select>
+      <div class="control-group">
+        <div class="control-label">Mode</div>
+        <select id="sim-mode">
+          <option value="live">Live (Server)</option>
+          <option value="demo">Demo (Offline)</option>
+          <option value="hybrid">Hybrid (Live + Bots)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Bot Count</span> <span id="bot-count-val">10</span>
         </div>
+        <input type="range" id="bot-count" min="0" max="100" value="10" />
+      </div>
 
-        <div class="control-group">
-            <div class="control-label"><span>Bot Count</span> <span id="bot-count-val">10</span></div>
-            <input type="range" id="bot-count" min="0" max="100" value="10">
-        </div>
+      <div class="control-group">
+        <div class="control-label">Bot Type</div>
+        <select id="bot-type">
+          <option value="random">Random Scatter</option>
+          <option value="cluster">Cluster Groups</option>
+          <option value="ring">Orbital Ring</option>
+        </select>
+      </div>
 
-        <div class="control-group">
-            <div class="control-label">Bot Type</div>
-            <select id="bot-type">
-                <option value="random">Random Scatter</option>
-                <option value="cluster">Cluster Groups</option>
-                <option value="ring">Orbital Ring</option>
-            </select>
-        </div>
-
-        <button id="regen-bots">Generate Bots</button>
+      <button id="regen-bots">Generate Bots</button>
     </div>
 
     <div id="chat-panel" class="ui-panel">
-        <div id="chat-log"></div>
-        <select id="chat-mode">
-            <option value="broadcast">Broadcast to All</option>
-        </select>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="chat-input" placeholder="Message..." autocomplete="off">
-            <button id="send-btn" style="width: auto;">Send</button>
-        </div>
+      <div id="chat-log"></div>
+      <select id="chat-mode">
+        <option value="broadcast">Broadcast to All</option>
+      </select>
+      <div style="display: flex; gap: 5px">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Message..."
+          autocomplete="off"
+        />
+        <button id="send-btn" style="width: auto">Send</button>
+      </div>
     </div>
 
     <div id="legend-panel" class="ui-panel">
-        <div class="legend-row">
-            <div class="legend-box" style="background: #22c55e;"></div>You
-        </div>
-        <div class="legend-row">
-            <div class="legend-box" style="background: #38bdf8;"></div>Real Users
-        </div>
-        <div class="legend-row">
-            <div class="legend-box" style="background: #f59e0b;"></div>Bots
-        </div>
+      <div class="legend-row">
+        <div class="legend-box" style="background: #22c55e"></div>
+        You
+      </div>
+      <div class="legend-row">
+        <div class="legend-box" style="background: #38bdf8"></div>
+        Real Users
+      </div>
+      <div class="legend-row">
+        <div class="legend-box" style="background: #f59e0b"></div>
+        Bots
+      </div>
     </div>
 
     <script>
-        window.onerror = function (msg, url, line) {
-            const txt = document.getElementById('status-text');
-            if (txt) txt.textContent = "Error: " + msg;
-            const dot = document.getElementById('status-dot');
-            if (dot) dot.className = 'status-dot disconnected';
-            return false;
-        };
+      window.onerror = function (msg, url, line) {
+        const txt = document.getElementById("status-text");
+        if (txt) txt.textContent = "Error: " + msg;
+        const dot = document.getElementById("status-dot");
+        if (dot) dot.className = "status-dot disconnected";
+        return false;
+      };
 
-        const WS_URL = "ws://127.0.0.1:8080";
+      const WS_URL = "ws://127.0.0.1:8080";
 
-        // State
-        const state = {
-            userId: localStorage.getItem('jc4_userId') || generateUUID(),
-            nickname: localStorage.getItem('jc4_nickname') || generateNickname(),
-            instanceId: generateUUID(),
-            mode: 'live', // live, demo, hybrid
-            realNodes: [], // Nodes from server
-            botNodes: [], // Generated bot nodes
-            graphNodes: new Map(), // id -> { mesh, label, data }
-            links: [],
-            packets: []
-        };
+      // State
+      const state = {
+        userId: localStorage.getItem("jc4_userId") || generateUUID(),
+        nickname: localStorage.getItem("jc4_nickname") || generateNickname(),
+        instanceId: generateUUID(),
+        mode: "live", // live, demo, hybrid
+        realNodes: [], // Nodes from server
+        botNodes: [], // Generated bot nodes
+        graphNodes: new Map(), // id -> { mesh, label, data }
+        links: [],
+        packets: [],
+      };
 
-        // Persist Identity
-        localStorage.setItem('jc4_userId', state.userId);
-        localStorage.setItem('jc4_nickname', state.nickname);
-        document.getElementById('my-nickname').textContent = state.nickname;
+      // Persist Identity
+      localStorage.setItem("jc4_userId", state.userId);
+      localStorage.setItem("jc4_nickname", state.nickname);
+      document.getElementById("my-nickname").textContent = state.nickname;
 
-        // --- Utils ---
-        function generateUUID() { return Math.random().toString(36).substr(2, 9); }
-        function generateNickname() {
-            const names = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Neon', 'Cyber', 'Quantum', 'Flux', 'Zero', 'One'];
-            const suffix = Math.floor(Math.random() * 1000);
-            return names[Math.floor(Math.random() * names.length)] + '-' + suffix;
-        }
+      // --- Utils ---
+      function generateUUID() {
+        return Math.random().toString(36).substr(2, 9);
+      }
+      function generateNickname() {
+        const names = [
+          "Alpha",
+          "Beta",
+          "Gamma",
+          "Delta",
+          "Neon",
+          "Cyber",
+          "Quantum",
+          "Flux",
+          "Zero",
+          "One",
+        ];
+        const suffix = Math.floor(Math.random() * 1000);
+        return names[Math.floor(Math.random() * names.length)] + "-" + suffix;
+      }
 
-        // --- Three.js ---
-        const container = document.getElementById('canvas-container');
+      // --- Three.js ---
+      const container = document.getElementById("canvas-container");
+
+      try {
+        if (typeof THREE === "undefined")
+          throw new Error("THREE is not defined. Check internet connection.");
+        if (typeof THREE.OrbitControls === "undefined")
+          throw new Error("OrbitControls not loaded. Check local file.");
+      } catch (e) {
+        document.getElementById("status-text").textContent = e.message;
+        document.getElementById("status-dot").className =
+          "status-dot disconnected";
+        throw e;
+      }
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x020617, 0.015);
+
+      const camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 50, 80);
+
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.3;
+
+      // Helpers
+      const grid = new THREE.PolarGridHelper(80, 16, 8, 64, 0x1e293b, 0x0f172a);
+      scene.add(grid);
+      const axes = new THREE.AxesHelper(5);
+      scene.add(axes);
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const dl = new THREE.DirectionalLight(0xffffff, 1);
+      dl.position.set(10, 20, 10);
+      scene.add(dl);
+      const pl = new THREE.PointLight(0x38bdf8, 2, 50);
+      pl.position.set(0, 5, 0);
+      scene.add(pl);
+
+      // --- WebSocket ---
+      let ws;
+      let reconnectTimer;
+
+      function connect() {
+        console.log("Attempting connection to", WS_URL);
+        if (state.mode === "demo") return;
+
+        // Timeout safety
+        setTimeout(() => {
+          const txt = document.getElementById("status-text").textContent;
+          if (txt === "Initializing..." || txt === "Connecting...") {
+            console.error("Connection timed out - server may be unreachable");
+            setStatus("disconnected");
+          }
+        }, 3000);
 
         try {
-            if (typeof THREE === 'undefined') throw new Error("THREE is not defined. Check internet connection.");
-            if (typeof THREE.OrbitControls === 'undefined') throw new Error("OrbitControls not loaded. Check local file.");
+          ws = new WebSocket(WS_URL);
         } catch (e) {
-            document.getElementById('status-text').textContent = e.message;
-            document.getElementById('status-dot').className = 'status-dot disconnected';
-            throw e;
+          console.error("WebSocket constructor error:", e);
+          setStatus("disconnected");
+          return;
         }
 
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x020617, 0.015);
+        ws.onopen = () => {
+          setStatus("connected");
+          ws.send(
+            JSON.stringify({
+              type: "join",
+              userId: state.userId,
+              instanceId: state.instanceId,
+              nickname: state.nickname,
+            })
+          );
+        };
+        ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
+        ws.onclose = () => {
+          if (state.mode !== "demo") {
+            setStatus("disconnected");
+            reconnectTimer = setTimeout(connect, 2000);
+          }
+        };
+        ws.onerror = (err) => {
+          console.error("WS Error", err);
+          if (state.mode !== "demo") setStatus("disconnected");
+        };
+      }
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 50, 80);
+      function disconnect() {
+        if (ws) {
+          ws.onclose = null; // Prevent auto-reconnect
+          ws.close();
+          ws = null;
+        }
+        clearTimeout(reconnectTimer);
+      }
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      function setStatus(s) {
+        const dot = document.getElementById("status-dot");
+        const txt = document.getElementById("status-text");
+
+        if (state.mode === "demo") {
+          dot.className = "status-dot demo-mode";
+          txt.textContent = "Demo Mode (Offline)";
+          return;
+        }
+
+        dot.className = "status-dot " + s;
+        txt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+
+        if (s === "disconnected") {
+          txt.textContent = "Disconnected (Retrying...)";
+        }
+      }
+
+      function handleMessage(data) {
+        if (data.type === "presence") {
+          state.realNodes = data.nodes;
+          updateGraph();
+        }
+        if (data.type === "chat") receiveChat(data);
+      }
+
+      // --- Simulation Logic ---
+      function generateBots() {
+        const count = parseInt(document.getElementById("bot-count").value);
+        const type = document.getElementById("bot-type").value;
+        state.botNodes = [];
+
+        for (let i = 0; i < count; i++) {
+          const botId = "bot-" + generateUUID();
+          let pos;
+
+          if (type === "random") {
+            pos = new THREE.Vector3(
+              (Math.random() - 0.5) * 100,
+              0,
+              (Math.random() - 0.5) * 100
+            );
+          } else if (type === "cluster") {
+            const clusterCenter = new THREE.Vector3(
+              (Math.random() - 0.5) * 60,
+              0,
+              (Math.random() - 0.5) * 60
+            );
+            pos = new THREE.Vector3(
+              clusterCenter.x + (Math.random() - 0.5) * 20,
+              0,
+              clusterCenter.z + (Math.random() - 0.5) * 20
+            );
+          } else if (type === "ring") {
+            const angle = (i / count) * Math.PI * 2;
+            const radius = 40 + Math.random() * 5;
+            pos = new THREE.Vector3(
+              Math.cos(angle) * radius,
+              0,
+              Math.sin(angle) * radius
+            );
+          }
+
+          state.botNodes.push({
+            userId: botId,
+            instanceId: botId, // Bots are single instances
+            nickname: "Bot-" + Math.floor(Math.random() * 999),
+            isBot: true,
+            position: pos,
+          });
+        }
+        updateGraph();
+      }
+
+      function simulateBotTraffic() {
+        if (state.botNodes.length < 2) return;
+
+        // Randomly pick a bot to send a message
+        if (Math.random() < 0.05) {
+          // 5% chance per frame
+          const sender =
+            state.botNodes[Math.floor(Math.random() * state.botNodes.length)];
+          const target =
+            state.botNodes[Math.floor(Math.random() * state.botNodes.length)];
+
+          if (sender !== target) {
+            const msgs = ["SYNC", "ACK", "DATA", "PING", "HASH", "BLOCK"];
+            const text = msgs[Math.floor(Math.random() * msgs.length)];
+
+            receiveChat({
+              from: {
+                userId: sender.userId,
+                nickname: sender.nickname,
+                isBot: true,
+              },
+              text: text,
+              mode: "broadcast", // Visual simplification
+            });
+          }
+        }
+      }
+
+      // --- Graph Logic ---
+      const geoUser = new THREE.SphereGeometry(2, 32, 32);
+      const geoBot = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+      const matSelf = new THREE.MeshStandardMaterial({
+        color: 0x22c55e,
+        emissive: 0x15803d,
+        emissiveIntensity: 0.5,
+      });
+      const matOther = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x0369a1,
+        emissiveIntensity: 0.5,
+      });
+      const matBot = new THREE.MeshStandardMaterial({
+        color: 0xf59e0b,
+        emissive: 0xb45309,
+        emissiveIntensity: 0.5,
+      });
+      const matLine = new THREE.LineBasicMaterial({
+        color: 0x475569,
+        transparent: true,
+        opacity: 0.2,
+      });
+      const matMeshLine = new THREE.LineBasicMaterial({
+        color: 0x64748b,
+        transparent: true,
+        opacity: 0.15,
+      });
+
+      function updateGraph() {
+        // Combine Real + Bots
+        const allNodes = [...state.realNodes, ...state.botNodes];
+
+        // 1. Group
+        const users = new Map();
+        const activeIds = new Set();
+
+        allNodes.forEach((n) => {
+          activeIds.add(n.instanceId);
+          activeIds.add(n.userId);
+
+          if (!users.has(n.userId)) {
+            users.set(n.userId, { ...n, instances: [] });
+          }
+          users.get(n.userId).instances.push(n);
+        });
+
+        // 2. Cleanup
+        for (const [id, node] of state.graphNodes) {
+          if (!activeIds.has(id)) {
+            scene.remove(node.mesh);
+            if (node.label) node.label.remove();
+            state.graphNodes.delete(id);
+          }
+        }
+
+        // 3. Create/Update Nodes
+        const realUserCount = [...users.values()].filter(
+          (u) => !u.isBot
+        ).length;
+        const radius = Math.max(15, realUserCount * 5);
+        let realIdx = 0;
+
+        for (const [userId, user] of users) {
+          let userPos;
+
+          if (user.isBot) {
+            userPos = user.position; // Bots have pre-calc position
+          } else {
+            // Real users in circle
+            const angle = (realIdx / (realUserCount || 1)) * Math.PI * 2;
+            const ux = Math.cos(angle) * radius;
+            const uz = Math.sin(angle) * radius;
+            userPos = new THREE.Vector3(ux, 0, uz);
+            realIdx++;
+          }
+
+          // User Node
+          if (!state.graphNodes.has(userId)) {
+            createNode(
+              userId,
+              user.isBot ? "bot" : "user",
+              user.userId === state.userId,
+              user.nickname,
+              userPos
+            );
+          } else {
+            // Lerp for smooth transition? For now direct copy
+            const node = state.graphNodes.get(userId);
+            node.mesh.position.lerp(userPos, 0.1);
+          }
+
+          // Instances (only for real users usually, bots are single)
+          user.instances.forEach((inst, i) => {
+            if (inst.instanceId === userId) return; // Skip self if same ID (bots)
+
+            const iAngle = (i / user.instances.length) * Math.PI * 2;
+            const iRad = 4;
+            const ix = userPos.x + Math.cos(iAngle) * iRad;
+            const iz = userPos.z + Math.sin(iAngle) * iRad;
+            const instPos = new THREE.Vector3(ix, 0, iz);
+
+            if (!state.graphNodes.has(inst.instanceId)) {
+              createNode(
+                inst.instanceId,
+                "instance",
+                inst.userId === state.userId,
+                "Tab",
+                instPos
+              );
+            } else {
+              state.graphNodes
+                .get(inst.instanceId)
+                .mesh.position.lerp(instPos, 0.1);
+            }
+          });
+        }
+
+        // 4. Links (Mesh Topology)
+        state.links.forEach((l) => scene.remove(l));
+        state.links = [];
+
+        const userNodes = [];
+        users.forEach((u) => {
+          const node = state.graphNodes.get(u.userId);
+          if (node) userNodes.push(node);
+        });
+
+        // A. Links from User to Instances (Star)
+        users.forEach((user) => {
+          const uNode = state.graphNodes.get(user.userId);
+          if (!uNode) return;
+
+          user.instances.forEach((inst) => {
+            if (inst.instanceId === user.userId) return;
+            const iNode = state.graphNodes.get(inst.instanceId);
+            if (iNode) {
+              drawLine(uNode.mesh.position, iNode.mesh.position, matLine);
+            }
+          });
+        });
+
+        // B. Links between Users/Bots (Mesh) - NEW FEATURE
+        for (let i = 0; i < userNodes.length; i++) {
+          for (let j = i + 1; j < userNodes.length; j++) {
+            const n1 = userNodes[i];
+            const n2 = userNodes[j];
+            const dist = n1.mesh.position.distanceTo(n2.mesh.position);
+            // Connect if close enough (Mesh)
+            if (dist < 25) {
+              drawLine(n1.mesh.position, n2.mesh.position, matMeshLine);
+            }
+          }
+        }
+
+        updateDMList(users);
+      }
+
+      function drawLine(p1, p2, mat) {
+        const pts = [p1, p2];
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const line = new THREE.Line(geo, mat);
+        scene.add(line);
+        state.links.push(line);
+      }
+
+      function createNode(id, type, isSelf, labelText, pos) {
+        let geo, mat;
+        if (type === "bot") {
+          geo = geoBot;
+          mat = matBot;
+        } else if (type === "user") {
+          geo = geoUser;
+          mat = isSelf ? matSelf : matOther;
+        } else {
+          // type === 'instance'
+          geo = new THREE.SphereGeometry(0.8, 16, 16);
+          mat = isSelf
+            ? new THREE.MeshStandardMaterial({ color: 0x4ade80 })
+            : new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+        }
+
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.copy(pos);
+        scene.add(mesh);
+
+        const label = document.createElement("div");
+        label.className = "node-label";
+        label.textContent = labelText;
+        document.body.appendChild(label);
+
+        state.graphNodes.set(id, { mesh, label, type, isSelf });
+      }
+
+      function updateDMList(users) {
+        const sel = document.getElementById("chat-mode");
+        const current = sel.value;
+        // Only add real users to DM list to avoid clutter? Or allow DMing bots?
+        // Let's allow DMing bots for fun.
+        sel.innerHTML = '<option value="broadcast">Broadcast to All</option>';
+        users.forEach((u) => {
+          if (u.userId !== state.userId) {
+            const opt = document.createElement("option");
+            opt.value = u.userId;
+            opt.textContent = `DM: ${u.nickname}`;
+            sel.appendChild(opt);
+          }
+        });
+        sel.value = current;
+      }
+
+      // --- Chat ---
+      const log = document.getElementById("chat-log");
+      const input = document.getElementById("chat-input");
+      const btn = document.getElementById("send-btn");
+
+      function send() {
+        const txt = input.value.trim();
+        if (!txt) return;
+
+        const mode = document.getElementById("chat-mode").value;
+        const msg = {
+          type: "chat",
+          mode: mode === "broadcast" ? "broadcast" : "direct",
+          toUserId: mode === "broadcast" ? null : mode,
+          from: { userId: state.userId, nickname: state.nickname },
+          text: txt,
+        };
+
+        if (state.mode !== "demo") {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(msg));
+          }
+        } else {
+          // Local echo in demo mode
+          receiveChat(msg);
+        }
+        input.value = "";
+      }
+
+      btn.onclick = send;
+      input.onkeypress = (e) => e.key === "Enter" && send();
+
+      function receiveChat(data) {
+        const div = document.createElement("div");
+        div.className = "msg";
+        const time = new Date().toLocaleTimeString();
+        const isSelf = data.from.userId === state.userId;
+        const isBot = data.from.isBot;
+
+        div.innerHTML = `<span class="msg-time">[${time}]</span><span class="msg-sender ${
+          isSelf ? "self" : ""
+        } ${isBot ? "bot" : ""}">${data.from.nickname}</span>: ${data.text}`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+
+        // Packet Animation
+        const sender = state.graphNodes.get(data.from.userId);
+        if (!sender) return;
+
+        const targets = [];
+        if (data.mode === "broadcast") {
+          // Flood fill visual: Send to neighbors? For now, send to random subset to avoid chaos
+          state.graphNodes.forEach((n, id) => {
+            if (n.type !== "instance" && id !== data.from.userId) {
+              // Only send if connected? Or broadcast to all?
+              // Let's broadcast to all for clarity
+              targets.push(n);
+            }
+          });
+        } else {
+          const t = state.graphNodes.get(data.toUserId);
+          if (t) targets.push(t);
+        }
+
+        targets.forEach((t) => {
+          const pkt = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4),
+            new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+          );
+          pkt.position.copy(sender.mesh.position);
+          scene.add(pkt);
+          state.packets.push({
+            mesh: pkt,
+            start: sender.mesh.position.clone(),
+            end: t.mesh.position.clone(),
+            p: 0,
+          });
+        });
+      }
+
+      // --- UI Controls ---
+      const modeSel = document.getElementById("sim-mode");
+      const botCountRange = document.getElementById("bot-count");
+      const botCountVal = document.getElementById("bot-count-val");
+      const regenBtn = document.getElementById("regen-bots");
+
+      modeSel.onchange = () => {
+        state.mode = modeSel.value;
+        if (state.mode === "demo") {
+          disconnect();
+          setStatus("demo");
+          state.realNodes = []; // Clear real nodes
+          // Add self as local node
+          state.realNodes.push({
+            userId: state.userId,
+            instanceId: state.instanceId,
+            nickname: state.nickname,
+          });
+        } else {
+          connect();
+        }
+        updateGraph();
+      };
+
+      botCountRange.oninput = () => {
+        botCountVal.textContent = botCountRange.value;
+      };
+
+      regenBtn.onclick = generateBots;
+
+      // --- Loop ---
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+
+        // Packets
+        for (let i = state.packets.length - 1; i >= 0; i--) {
+          const p = state.packets[i];
+          p.p += 0.02;
+          if (p.p >= 1) {
+            scene.remove(p.mesh);
+            state.packets.splice(i, 1);
+          } else {
+            p.mesh.position.lerpVectors(p.start, p.end, p.p);
+          }
+        }
+
+        // Bot Traffic
+        if (state.mode !== "live") {
+          simulateBotTraffic();
+        }
+
+        // Labels
+        state.graphNodes.forEach((n) => {
+          if (n.label) {
+            const tempV = n.mesh.position.clone();
+            tempV.project(camera);
+            const x = (tempV.x * 0.5 + 0.5) * container.clientWidth;
+            const y = (tempV.y * -0.5 + 0.5) * container.clientHeight;
+            n.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
+            n.label.style.zIndex = ((-tempV.z * 0.5 + 0.5) * 100000) | 0;
+          }
+        });
+
+        renderer.render(scene, camera);
+      }
+
+      window.onresize = () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.3;
-
-        // Helpers
-        const grid = new THREE.PolarGridHelper(80, 16, 8, 64, 0x1e293b, 0x0f172a);
-        scene.add(grid);
-        const axes = new THREE.AxesHelper(5);
-        scene.add(axes);
-
-        // Lights
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        const dl = new THREE.DirectionalLight(0xffffff, 1);
-        dl.position.set(10, 20, 10);
-        scene.add(dl);
-        const pl = new THREE.PointLight(0x38bdf8, 2, 50);
-        pl.position.set(0, 5, 0);
-        scene.add(pl);
-
-        // --- WebSocket ---
-        let ws;
-        let reconnectTimer;
-
-        function connect() {
-            console.log("Attempting connection to", WS_URL);
-            if (state.mode === 'demo') return;
-
-            // Timeout safety
-            setTimeout(() => {
-                const txt = document.getElementById('status-text').textContent;
-                if (txt === 'Initializing...' || txt === 'Connecting...') {
-                    console.error("Connection timed out - server may be unreachable");
-                    setStatus('disconnected');
-                }
-            }, 3000);
-
-            try {
-                ws = new WebSocket(WS_URL);
-            } catch (e) {
-                console.error("WebSocket constructor error:", e);
-                setStatus('disconnected');
-                return;
-            }
-
-            ws.onopen = () => {
-                setStatus('connected');
-                ws.send(JSON.stringify({
-                    type: 'join',
-                    userId: state.userId,
-                    instanceId: state.instanceId,
-                    nickname: state.nickname
-                }));
-            };
-            ws.onmessage = e => handleMessage(JSON.parse(e.data));
-            ws.onclose = () => {
-                if (state.mode !== 'demo') {
-                    setStatus('disconnected');
-                    reconnectTimer = setTimeout(connect, 2000);
-                }
-            };
-            ws.onerror = (err) => {
-                console.error("WS Error", err);
-                if (state.mode !== 'demo') setStatus('disconnected');
-            };
-        }
-
-        function disconnect() {
-            if (ws) {
-                ws.onclose = null; // Prevent auto-reconnect
-                ws.close();
-                ws = null;
-            }
-            clearTimeout(reconnectTimer);
-        }
-
-        function setStatus(s) {
-            const dot = document.getElementById('status-dot');
-            const txt = document.getElementById('status-text');
-
-            if (state.mode === 'demo') {
-                dot.className = 'status-dot demo-mode';
-                txt.textContent = 'Demo Mode (Offline)';
-                return;
-            }
-
-            dot.className = 'status-dot ' + s;
-            txt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
-
-            if (s === 'disconnected') {
-                txt.textContent = 'Disconnected (Retrying...)';
-            }
-        }
-
-        function handleMessage(data) {
-            if (data.type === 'presence') {
-                state.realNodes = data.nodes;
-                updateGraph();
-            }
-            if (data.type === 'chat') receiveChat(data);
-        }
-
-        // --- Simulation Logic ---
-        function generateBots() {
-            const count = parseInt(document.getElementById('bot-count').value);
-            const type = document.getElementById('bot-type').value;
-            state.botNodes = [];
-
-            for (let i = 0; i < count; i++) {
-                const botId = 'bot-' + generateUUID();
-                let pos;
-
-                if (type === 'random') {
-                    pos = new THREE.Vector3(
-                        (Math.random() - 0.5) * 100,
-                        0,
-                        (Math.random() - 0.5) * 100
-                    );
-                } else if (type === 'cluster') {
-                    const clusterCenter = new THREE.Vector3(
-                        (Math.random() - 0.5) * 60,
-                        0,
-                        (Math.random() - 0.5) * 60
-                    );
-                    pos = new THREE.Vector3(
-                        clusterCenter.x + (Math.random() - 0.5) * 20,
-                        0,
-                        clusterCenter.z + (Math.random() - 0.5) * 20
-                    );
-                } else if (type === 'ring') {
-                    const angle = (i / count) * Math.PI * 2;
-                    const radius = 40 + (Math.random() * 5);
-                    pos = new THREE.Vector3(
-                        Math.cos(angle) * radius,
-                        0,
-                        Math.sin(angle) * radius
-                    );
-                }
-
-                state.botNodes.push({
-                    userId: botId,
-                    instanceId: botId, // Bots are single instances
-                    nickname: 'Bot-' + Math.floor(Math.random() * 999),
-                    isBot: true,
-                    position: pos
-                });
-            }
-            updateGraph();
-        }
-
-        function simulateBotTraffic() {
-            if (state.botNodes.length < 2) return;
-
-            // Randomly pick a bot to send a message
-            if (Math.random() < 0.05) { // 5% chance per frame
-                const sender = state.botNodes[Math.floor(Math.random() * state.botNodes.length)];
-                const target = state.botNodes[Math.floor(Math.random() * state.botNodes.length)];
-
-                if (sender !== target) {
-                    const msgs = ['SYNC', 'ACK', 'DATA', 'PING', 'HASH', 'BLOCK'];
-                    const text = msgs[Math.floor(Math.random() * msgs.length)];
-
-                    receiveChat({
-                        from: { userId: sender.userId, nickname: sender.nickname, isBot: true },
-                        text: text,
-                        mode: 'broadcast' // Visual simplification
-                    });
-                }
-            }
-        }
-
-        // --- Graph Logic ---
-        const geoUser = new THREE.SphereGeometry(2, 32, 32);
-        const geoBot = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-        const matSelf = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.5 });
-        const matOther = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0369a1, emissiveIntensity: 0.5 });
-        const matBot = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xb45309, emissiveIntensity: 0.5 });
-        const matLine = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.2 });
-        const matMeshLine = new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.15 });
-
-        function updateGraph() {
-            // Combine Real + Bots
-            const allNodes = [...state.realNodes, ...state.botNodes];
-
-            // 1. Group
-            const users = new Map();
-            const activeIds = new Set();
-
-            allNodes.forEach(n => {
-                activeIds.add(n.instanceId);
-                activeIds.add(n.userId);
-
-                if (!users.has(n.userId)) {
-                    users.set(n.userId, { ...n, instances: [] });
-                }
-                users.get(n.userId).instances.push(n);
-            });
-
-            // 2. Cleanup
-            for (const [id, node] of state.graphNodes) {
-                if (!activeIds.has(id)) {
-                    scene.remove(node.mesh);
-                    if (node.label) node.label.remove();
-                    state.graphNodes.delete(id);
-                }
-            }
-
-            // 3. Create/Update Nodes
-            const realUserCount = [...users.values()].filter(u => !u.isBot).length;
-            const radius = Math.max(15, realUserCount * 5);
-            let realIdx = 0;
-
-            for (const [userId, user] of users) {
-                let userPos;
-
-                if (user.isBot) {
-                    userPos = user.position; // Bots have pre-calc position
-                } else {
-                    // Real users in circle
-                    const angle = (realIdx / (realUserCount || 1)) * Math.PI * 2;
-                    const ux = Math.cos(angle) * radius;
-                    const uz = Math.sin(angle) * radius;
-                    userPos = new THREE.Vector3(ux, 0, uz);
-                    realIdx++;
-                }
-
-                // User Node
-                if (!state.graphNodes.has(userId)) {
-                    createNode(userId, user.isBot ? 'bot' : 'user', user.userId === state.userId, user.nickname, userPos);
-                } else {
-                    // Lerp for smooth transition? For now direct copy
-                    const node = state.graphNodes.get(userId);
-                    node.mesh.position.lerp(userPos, 0.1);
-                }
-
-                // Instances (only for real users usually, bots are single)
-                user.instances.forEach((inst, i) => {
-                    if (inst.instanceId === userId) return; // Skip self if same ID (bots)
-
-                    const iAngle = (i / user.instances.length) * Math.PI * 2;
-                    const iRad = 4;
-                    const ix = userPos.x + Math.cos(iAngle) * iRad;
-                    const iz = userPos.z + Math.sin(iAngle) * iRad;
-                    const instPos = new THREE.Vector3(ix, 0, iz);
-
-                    if (!state.graphNodes.has(inst.instanceId)) {
-                        createNode(inst.instanceId, 'instance', inst.userId === state.userId, 'Tab', instPos);
-                    } else {
-                        state.graphNodes.get(inst.instanceId).mesh.position.lerp(instPos, 0.1);
-                    }
-                });
-            }
-
-            // 4. Links (Mesh Topology)
-            state.links.forEach(l => scene.remove(l));
-            state.links = [];
-
-            const userNodes = [];
-            users.forEach(u => {
-                const node = state.graphNodes.get(u.userId);
-                if (node) userNodes.push(node);
-            });
-
-            // A. Links from User to Instances (Star)
-            users.forEach(user => {
-                const uNode = state.graphNodes.get(user.userId);
-                if (!uNode) return;
-
-                user.instances.forEach(inst => {
-                    if (inst.instanceId === user.userId) return;
-                    const iNode = state.graphNodes.get(inst.instanceId);
-                    if (iNode) {
-                        drawLine(uNode.mesh.position, iNode.mesh.position, matLine);
-                    }
-                });
-            });
-
-            // B. Links between Users/Bots (Mesh) - NEW FEATURE
-            for (let i = 0; i < userNodes.length; i++) {
-                for (let j = i + 1; j < userNodes.length; j++) {
-                    const n1 = userNodes[i];
-                    const n2 = userNodes[j];
-                    const dist = n1.mesh.position.distanceTo(n2.mesh.position);
-                    // Connect if close enough (Mesh)
-                    if (dist < 25) {
-                        drawLine(n1.mesh.position, n2.mesh.position, matMeshLine);
-                    }
-                }
-            }
-
-            updateDMList(users);
-        }
-
-        function drawLine(p1, p2, mat) {
-            const pts = [p1, p2];
-            const geo = new THREE.BufferGeometry().setFromPoints(pts);
-            const line = new THREE.Line(geo, mat);
-            scene.add(line);
-            state.links.push(line);
-        }
-
-        function createNode(id, type, isSelf, labelText, pos) {
-            let geo, mat;
-            if (type === 'bot') {
-                geo = geoBot;
-                mat = matBot;
-            } else if (type === 'user') {
-                geo = geoUser;
-                mat = isSelf ? matSelf : matOther;
-            } else { // type === 'instance'
-                geo = new THREE.SphereGeometry(0.8, 16, 16);
-                mat = isSelf ? new THREE.MeshStandardMaterial({ color: 0x4ade80 }) : new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
-            }
-
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.copy(pos);
-            scene.add(mesh);
-
-            const label = document.createElement('div');
-            label.className = 'node-label';
-            label.textContent = labelText;
-            document.body.appendChild(label);
-
-            state.graphNodes.set(id, { mesh, label, type, isSelf });
-        }
-
-        function updateDMList(users) {
-            const sel = document.getElementById('chat-mode');
-            const current = sel.value;
-            // Only add real users to DM list to avoid clutter? Or allow DMing bots?
-            // Let's allow DMing bots for fun.
-            sel.innerHTML = '<option value="broadcast">Broadcast to All</option>';
-            users.forEach(u => {
-                if (u.userId !== state.userId) {
-                    const opt = document.createElement('option');
-                    opt.value = u.userId;
-                    opt.textContent = `DM: ${u.nickname}`;
-                    sel.appendChild(opt);
-                }
-            });
-            sel.value = current;
-        }
-
-        // --- Chat ---
-        const log = document.getElementById('chat-log');
-        const input = document.getElementById('chat-input');
-        const btn = document.getElementById('send-btn');
-
-        function send() {
-            const txt = input.value.trim();
-            if (!txt) return;
-
-            const mode = document.getElementById('chat-mode').value;
-            const msg = {
-                type: 'chat',
-                mode: mode === 'broadcast' ? 'broadcast' : 'direct',
-                toUserId: mode === 'broadcast' ? null : mode,
-                from: { userId: state.userId, nickname: state.nickname },
-                text: txt
-            };
-
-            if (state.mode !== 'demo') {
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify(msg));
-                }
-            } else {
-                // Local echo in demo mode
-                receiveChat(msg);
-            }
-            input.value = '';
-        }
-
-        btn.onclick = send;
-        input.onkeypress = e => e.key === 'Enter' && send();
-
-        function receiveChat(data) {
-            const div = document.createElement('div');
-            div.className = 'msg';
-            const time = new Date().toLocaleTimeString();
-            const isSelf = data.from.userId === state.userId;
-            const isBot = data.from.isBot;
-
-            div.innerHTML = `<span class="msg-time">[${time}]</span><span class="msg-sender ${isSelf ? 'self' : ''} ${isBot ? 'bot' : ''}">${data.from.nickname}</span>: ${data.text}`;
-            log.appendChild(div);
-            log.scrollTop = log.scrollHeight;
-
-            // Packet Animation
-            const sender = state.graphNodes.get(data.from.userId);
-            if (!sender) return;
-
-            const targets = [];
-            if (data.mode === 'broadcast') {
-                // Flood fill visual: Send to neighbors? For now, send to random subset to avoid chaos
-                state.graphNodes.forEach((n, id) => {
-                    if (n.type !== 'instance' && id !== data.from.userId) {
-                        // Only send if connected? Or broadcast to all?
-                        // Let's broadcast to all for clarity
-                        targets.push(n);
-                    }
-                });
-            } else {
-                const t = state.graphNodes.get(data.toUserId);
-                if (t) targets.push(t);
-            }
-
-            targets.forEach(t => {
-                const pkt = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
-                pkt.position.copy(sender.mesh.position);
-                scene.add(pkt);
-                state.packets.push({ mesh: pkt, start: sender.mesh.position.clone(), end: t.mesh.position.clone(), p: 0 });
-            });
-        }
-
-        // --- UI Controls ---
-        const modeSel = document.getElementById('sim-mode');
-        const botCountRange = document.getElementById('bot-count');
-        const botCountVal = document.getElementById('bot-count-val');
-        const regenBtn = document.getElementById('regen-bots');
-
-        modeSel.onchange = () => {
-            state.mode = modeSel.value;
-            if (state.mode === 'demo') {
-                disconnect();
-                setStatus('demo');
-                state.realNodes = []; // Clear real nodes
-                // Add self as local node
-                state.realNodes.push({ userId: state.userId, instanceId: state.instanceId, nickname: state.nickname });
-            } else {
-                connect();
-            }
-            updateGraph();
-        };
-
-        botCountRange.oninput = () => {
-            botCountVal.textContent = botCountRange.value;
-        };
-
-        regenBtn.onclick = generateBots;
-
-        // --- Loop ---
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-
-            // Packets
-            for (let i = state.packets.length - 1; i >= 0; i--) {
-                const p = state.packets[i];
-                p.p += 0.02;
-                if (p.p >= 1) {
-                    scene.remove(p.mesh);
-                    state.packets.splice(i, 1);
-                } else {
-                    p.mesh.position.lerpVectors(p.start, p.end, p.p);
-                }
-            }
-
-            // Bot Traffic
-            if (state.mode !== 'live') {
-                simulateBotTraffic();
-            }
-
-            // Labels
-            state.graphNodes.forEach(n => {
-                if (n.label) {
-                    const tempV = n.mesh.position.clone();
-                    tempV.project(camera);
-                    const x = (tempV.x * .5 + .5) * container.clientWidth;
-                    const y = (tempV.y * -.5 + .5) * container.clientHeight;
-                    n.label.style.transform = `translate(-50%, -100%) translate(${x}px, ${y}px)`;
-                    n.label.style.zIndex = (-tempV.z * .5 + .5) * 100000 | 0;
-                }
-            });
-
-            renderer.render(scene, camera);
-        }
-
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
-
-        // Init
-        if (state.mode === 'live') connect();
-        generateBots();
-        animate();
-
+      };
+
+      // Init
+      if (state.mode === "live") connect();
+      generateBots();
+      animate();
     </script>
-</body>
-
+  </body>
 </html>
