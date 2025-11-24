@@ -27,6 +27,7 @@
       --accent: #10a37f;
       --message-user-bg: #0d6efd;
       --message-groot-bg: #444654;
+      --overlay-color: rgba(0, 0, 0, 0.3);
     }
 
     * {
@@ -137,6 +138,11 @@
       flex: 1;
       height: 100vh;
       overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: #1f2028;
     }
     /* Dark overlay for readability when background image is applied */
     #main::before {
@@ -146,7 +152,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: var(--overlay-color);
       pointer-events: none;
       z-index: 0;
     }
@@ -250,8 +256,8 @@
 <body>
   <!-- Preload background images so the environment converts their paths to URLs -->
   <div style="display:none">
-    <img id="bg-groot1" src="/home/oai/share/groot1.jpg" alt="Groot background 1" />
-    <img id="bg-groot2" src="/home/oai/share/Groot2.jpg" alt="Groot background 2" />
+    <img id="bg-groot1" src="groot1.jpg" alt="Groot background 1" />
+    <img id="bg-groot2" src="Groot2.jpg" alt="Groot background 2" />
   </div>
   <div id="sidebar">
     <div id="sidebar-header">
@@ -283,11 +289,12 @@
     const SELECTED_CHAT_KEY = 'grootGPT_selectedChat';
     const BACKGROUND_KEY = 'grootGPT_background';
 
-    // Background options: map keys to labels and image element IDs
+    // Background options: map keys to labels and how they apply (color or image)
     const backgroundOptions = {
-      default: { label: 'Default dark', imgId: null },
-      groot1: { label: 'Groot background 1', imgId: 'bg-groot1' },
-      groot2: { label: 'Groot background 2', imgId: 'bg-groot2' }
+      light: { label: 'Light', type: 'color', color: '#f5f7fb', overlay: 'rgba(0, 0, 0, 0.2)' },
+      dark: { label: 'Dark', type: 'color', color: '#1f2028', overlay: 'rgba(0, 0, 0, 0.35)' },
+      groot1: { label: 'Groot background 1', type: 'image', imgId: 'bg-groot1', overlay: 'rgba(0, 0, 0, 0.35)' },
+      groot2: { label: 'Groot background 2', type: 'image', imgId: 'bg-groot2', overlay: 'rgba(0, 0, 0, 0.35)' }
     };
 
     // Load chats from localStorage or initialize an empty object
@@ -301,7 +308,11 @@
     // Selected chat id
     let selectedChatId = localStorage.getItem(SELECTED_CHAT_KEY) || null;
     // Selected background key
-    let backgroundChoice = localStorage.getItem(BACKGROUND_KEY) || 'default';
+    let backgroundChoice = localStorage.getItem(BACKGROUND_KEY) || 'groot1';
+    if (!backgroundOptions[backgroundChoice]) {
+      backgroundChoice = 'groot1';
+      saveBackgroundChoice();
+    }
 
     // DOM elements
     const chatListEl = document.getElementById('chat-list');
@@ -313,6 +324,7 @@
     const settingsToggle = document.getElementById('settings-toggle');
     const settingsPanel = document.getElementById('settings-panel');
     const backgroundSelect = document.getElementById('background-select');
+    const mainEl = document.getElementById('main');
 
     // Responses variations
     const grootResponses = [
@@ -454,15 +466,24 @@
       });
     }
     function applyBackground() {
-      // If default, remove image
-      if (backgroundChoice === 'default') {
-        document.body.style.backgroundImage = '';
-      } else {
-        const bg = backgroundOptions[backgroundChoice];
+      let bg = backgroundOptions[backgroundChoice];
+      if (!bg) {
+        backgroundChoice = 'groot1';
+        saveBackgroundChoice();
+        bg = backgroundOptions[backgroundChoice];
+        if (backgroundSelect.value !== backgroundChoice) {
+          backgroundSelect.value = backgroundChoice;
+        }
+      }
+      document.documentElement.style.setProperty('--overlay-color', bg.overlay || 'rgba(0, 0, 0, 0.3)');
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundColor = bg.color || '#1f2028';
+      mainEl.style.backgroundImage = '';
+      mainEl.style.backgroundColor = bg.color || '#1f2028';
+      if (bg.type === 'image') {
         const imgEl = bg.imgId ? document.getElementById(bg.imgId) : null;
         if (imgEl) {
-          // Use the resolved src so the environment converts the path to a URL
-          document.body.style.backgroundImage = `url('${imgEl.src}')`;
+          mainEl.style.backgroundImage = `url('${imgEl.src}')`;
         }
       }
     }
