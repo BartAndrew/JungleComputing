@@ -158,7 +158,13 @@
       flex: 1;
       height: 100vh;
       overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: #1f2028;
     }
+    /* Dark overlay for readability when background image is applied */
     #main::before {
       content: '';
       position: absolute;
@@ -166,10 +172,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: var(--overlay-color);
       pointer-events: none;
       z-index: 0;
     }
+    /* Centered chat column */
     #chat-column {
       position: relative;
       max-width: 750px;
@@ -289,10 +296,10 @@
   </style>
 </head>
 <body>
-  <!-- Preload background images -->
+  <!-- Preload background images so the environment converts their paths to URLs -->
   <div style="display:none">
-    <img id="bg-groot1" src="/home/oai/share/groot1.jpg" alt="Groot background 1" />
-    <img id="bg-groot2" src="/home/oai/share/Groot2.jpg" alt="Groot background 2" />
+    <img id="bg-groot1" src="groot1.jpg" alt="Groot background 1" />
+    <img id="bg-groot2" src="Groot2.jpg" alt="Groot background 2" />
   </div>
   <!-- Sidebar overlay for mobile -->
   <div id="sidebar-overlay"></div>
@@ -330,9 +337,10 @@
     const BACKGROUND_KEY = 'grootGPT_background';
     // Background options
     const backgroundOptions = {
-      default: { label: 'Default dark', imgId: null },
-      groot1: { label: 'Groot background 1', imgId: 'bg-groot1' },
-      groot2: { label: 'Groot background 2', imgId: 'bg-groot2' }
+      light: { label: 'Light', type: 'color', color: '#f5f7fb', overlay: 'rgba(0, 0, 0, 0.2)' },
+      dark: { label: 'Dark', type: 'color', color: '#1f2028', overlay: 'rgba(0, 0, 0, 0.35)' },
+      groot1: { label: 'Groot background 1', type: 'image', imgId: 'bg-groot1', overlay: 'rgba(0, 0, 0, 0.35)' },
+      groot2: { label: 'Groot background 2', type: 'image', imgId: 'bg-groot2', overlay: 'rgba(0, 0, 0, 0.35)' }
     };
     // Load chats
     let chats = {};
@@ -345,6 +353,11 @@
     let selectedChatId = localStorage.getItem(SELECTED_CHAT_KEY) || null;
     // Default background is groot1 if not set
     let backgroundChoice = localStorage.getItem(BACKGROUND_KEY) || 'groot1';
+    if (!backgroundOptions[backgroundChoice]) {
+      backgroundChoice = 'groot1';
+      saveBackgroundChoice();
+    }
+
     // DOM elements
     const chatListEl = document.getElementById('chat-list');
     const chatTitleEl = document.getElementById('chat-title');
@@ -367,7 +380,20 @@
       return grootResponses[Math.floor(Math.random() * grootResponses.length)];
     }
     function saveChats() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(chats)); } catch (e) { console.error(e); }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      } catch (e) {
+        console.error('Failed to save chats', e);
+      }
+    }
+    function saveSelectedChat() {
+      localStorage.setItem(SELECTED_CHAT_KEY, selectedChatId);
+    }
+    function saveBackgroundChoice() {
+      localStorage.setItem(BACKGROUND_KEY, backgroundChoice);
+    }
+    function generateChatId() {
+      return 'chat-' + Date.now();
     }
     function saveSelectedChat() { localStorage.setItem(SELECTED_CHAT_KEY, selectedChatId); }
     function saveBackgroundChoice() { localStorage.setItem(BACKGROUND_KEY, backgroundChoice); }
@@ -480,13 +506,24 @@
       });
     }
     function applyBackground() {
-      if (backgroundChoice === 'default') {
+      let bg = backgroundOptions[backgroundChoice];
+      if (!bg) {
+        backgroundChoice = 'groot1';
+        saveBackgroundChoice();
+        bg = backgroundOptions[backgroundChoice];
+        if (backgroundSelect.value !== backgroundChoice) {
+          backgroundSelect.value = backgroundChoice;
+        }
+      }
+      document.documentElement.style.setProperty('--overlay-color', bg.overlay || 'rgba(0, 0, 0, 0.3)');
         document.body.style.backgroundImage = '';
-      } else {
-        const bg = backgroundOptions[backgroundChoice];
+      document.body.style.backgroundColor = bg.color || '#1f2028';
+      mainEl.style.backgroundImage = '';
+      mainEl.style.backgroundColor = bg.color || '#1f2028';
+      if (bg.type === 'image') {
         const imgEl = bg.imgId ? document.getElementById(bg.imgId) : null;
         if (imgEl) {
-          document.body.style.backgroundImage = `url('${imgEl.src}')`;
+          mainEl.style.backgroundImage = `url('${imgEl.src}')`;
         }
       }
     }
