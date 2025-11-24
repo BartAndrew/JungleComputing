@@ -22,6 +22,7 @@
       --accent: #10a37f;
       --message-user-bg: #0d6efd;
       --message-groot-bg: #444654;
+      --overlay-color: rgba(0, 0, 0, 0.35);
     }
 
     * {
@@ -47,12 +48,14 @@
     /* Sidebar styles */
     #sidebar {
       width: var(--sidebar-width);
+      flex: 0 0 var(--sidebar-width);
+      min-width: 0;
       background-color: var(--sidebar-bg);
       border-right: 1px solid var(--sidebar-border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, width 0.3s ease, flex-basis 0.3s ease;
     }
     #sidebar-header {
       padding: 16px;
@@ -125,6 +128,14 @@
       border: 1px solid var(--sidebar-border);
       background-color: #2a2b33;
       color: var(--text-light);
+    }
+    /* Desktop collapse */
+    body.sidebar-collapsed #sidebar {
+      width: 0;
+      flex-basis: 0;
+      border-right: 0;
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* Mobile sidebar collapse */
@@ -202,19 +213,19 @@
       align-items: center;
       gap: 12px;
     }
-    /* Mobile menu button */
-    #mobile-menu-btn {
-      display: none;
+    /* Sidebar toggle button */
+    #sidebar-toggle-btn {
       background: none;
       border: none;
       color: var(--text-light);
-      font-size: 1.4rem;
+      font-size: 1.1rem;
       cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+      line-height: 1;
     }
-    @media (max-width: 768px) {
-      #mobile-menu-btn {
-        display: block;
-      }
+    #sidebar-toggle-btn:hover {
+      background-color: rgba(255, 255, 255, 0.08);
     }
     #chat-messages {
       flex: 1;
@@ -320,7 +331,7 @@
   <div id="main">
     <div id="chat-column">
       <div id="chat-header">
-        <button id="mobile-menu-btn">☰</button>
+        <button id="sidebar-toggle-btn" aria-label="Toggle sidebar">Menu</button>
         <span id="chat-title">New Chat</span>
       </div>
       <div id="chat-messages"></div>
@@ -368,9 +379,11 @@
     const settingsToggle = document.getElementById('settings-toggle');
     const settingsPanel = document.getElementById('settings-panel');
     const backgroundSelect = document.getElementById('background-select');
+    const mainEl = document.getElementById('main');
     const sidebarEl = document.getElementById('sidebar');
     const sidebarOverlayEl = document.getElementById('sidebar-overlay');
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const bodyEl = document.body;
     // Replies variations
     const grootResponses = [
       'I am Groot.', 'I am Groot!', 'I am Groot?', 'I am... Groot.',
@@ -395,9 +408,6 @@
     function generateChatId() {
       return 'chat-' + Date.now();
     }
-    function saveSelectedChat() { localStorage.setItem(SELECTED_CHAT_KEY, selectedChatId); }
-    function saveBackgroundChoice() { localStorage.setItem(BACKGROUND_KEY, backgroundChoice); }
-    function generateChatId() { return 'chat-' + Date.now(); }
     function createNewChat() {
       const id = generateChatId();
       chats[id] = { messages: [] };
@@ -516,7 +526,7 @@
         }
       }
       document.documentElement.style.setProperty('--overlay-color', bg.overlay || 'rgba(0, 0, 0, 0.3)');
-        document.body.style.backgroundImage = '';
+      document.body.style.backgroundImage = '';
       document.body.style.backgroundColor = bg.color || '#1f2028';
       mainEl.style.backgroundImage = '';
       mainEl.style.backgroundColor = bg.color || '#1f2028';
@@ -557,27 +567,58 @@
         }
       });
       userInputEl.addEventListener('input', resizeTextarea);
-      // Mobile menu toggle
-      mobileMenuBtn.addEventListener('click', () => {
-        openSidebar();
+      sidebarToggleBtn.addEventListener('click', () => {
+        if (isMobile()) {
+          openSidebar();
+        } else {
+          toggleSidebarCollapse();
+        }
       });
       sidebarOverlayEl.addEventListener('click', () => {
         closeSidebar();
       });
+      window.addEventListener('resize', () => {
+        if (isMobile()) {
+          bodyEl.classList.remove('sidebar-collapsed');
+          closeSidebar();
+          sidebarToggleBtn.textContent = 'Menu';
+        } else {
+          sidebarEl.classList.remove('open');
+          sidebarOverlayEl.style.display = 'none';
+          sidebarToggleBtn.textContent = bodyEl.classList.contains('sidebar-collapsed') ? 'Show menu' : 'Hide menu';
+        }
+      });
+    }
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+    function toggleSidebarCollapse() {
+      const collapsed = bodyEl.classList.toggle('sidebar-collapsed');
+      sidebarToggleBtn.textContent = collapsed ? 'Show menu' : 'Hide menu';
     }
     function openSidebar() {
-      sidebarEl.classList.add('open');
-      sidebarOverlayEl.style.display = 'block';
+      if (isMobile()) {
+        sidebarEl.classList.add('open');
+        sidebarOverlayEl.style.display = 'block';
+        sidebarToggleBtn.textContent = 'Close menu';
+      } else {
+        bodyEl.classList.remove('sidebar-collapsed');
+        sidebarToggleBtn.textContent = 'Hide menu';
+      }
     }
     function closeSidebar() {
-      sidebarEl.classList.remove('open');
-      sidebarOverlayEl.style.display = 'none';
+      if (isMobile()) {
+        sidebarEl.classList.remove('open');
+        sidebarOverlayEl.style.display = 'none';
+        sidebarToggleBtn.textContent = 'Menu';
+      }
     }
     (function init() {
       initEventListeners();
       initSettings();
       updateUI();
       resizeTextarea();
+      sidebarToggleBtn.textContent = isMobile() ? 'Menu' : 'Hide menu';
     })();
   </script>
 </body>
