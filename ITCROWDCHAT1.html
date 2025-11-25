@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IT Crowd Chat – Mobile Friendly</title>
+  <style>
+    /*
+      IT Crowd Chat – mobile friendly
+      
+      Based on the GrootGPT v4 template with responsive design. This version
+      allows selecting between three characters from The IT Crowd: Roy,
+      Moss and Jen. Each character has their own set of responses and two
+      background images. Selecting a background will not only change the look
+      of the chat but also determine which character responds.
+    */
+    :root {
+      --sidebar-width: 260px;
+      --sidebar-bg: #202123;
+      --sidebar-border: #2d2d2d;
+      --main-bg: #343541;
+      --text-light: #ececf1;
+      --accent: #10a37f;
+      --message-user-bg: #0d6efd;
+      --message-bot-bg: #444654;
+      --overlay-color: rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+      color: var(--text-light);
+      background-color: var(--main-bg);
+      overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-attachment: fixed;
+    }
+
+    /* Sidebar styles */
+    #sidebar {
+      width: var(--sidebar-width);
+      flex: 0 0 var(--sidebar-width);
+      min-width: 0;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.3s ease, width 0.3s ease, flex-basis 0.3s ease;
+    }
+    #sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--sidebar-border);
+      font-weight: 600;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #new-chat-btn {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      margin: 12px 0;
+      border: 1px solid var(--sidebar-border);
+      border-radius: 6px;
+      background-color: transparent;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #new-chat-btn:hover {
+      background-color: #2a2b33;
+    }
+    #chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 8px;
+    }
+    .chat-item {
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      word-break: break-word;
+    }
+    .chat-item:hover {
+      background-color: #2a2b33;
+    }
+    .chat-item.active {
+      background-color: #40414f;
+    }
+    #sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid var(--sidebar-border);
+      font-size: 0.9rem;
+    }
+    #settings-toggle {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #settings-panel {
+      display: none;
+      padding-top: 8px;
+    }
+    #settings-panel label {
+      display: block;
+      margin: 8px 0 4px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    #settings-panel select {
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid var(--sidebar-border);
+      background-color: #2a2b33;
+      color: var(--text-light);
+    }
+    /* Desktop collapse */
+    body.sidebar-collapsed #sidebar {
+      width: 0;
+      flex-basis: 0;
+      border-right: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Mobile sidebar collapse */
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+    }
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      z-index: 50;
+    }
+
+    /* Main chat area */
+    #main {
+      position: relative;
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: #1f2028;
+    }
+    /* Dark overlay for readability when background image is applied */
+    #main::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--overlay-color);
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* Centered chat column */
+    #chat-column {
+      position: relative;
+      max-width: 750px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+    @media (max-width: 768px) {
+      #chat-column {
+        max-width: none;
+        margin: 0;
+      }
+    }
+    #chat-header {
+      padding: 16px;
+      border-bottom: 1px solid #3c3d43;
+      font-weight: 600;
+      font-size: 1rem;
+      background-color: rgba(32, 33, 35, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    /* Sidebar toggle button */
+    #sidebar-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+    #sidebar-toggle-btn:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      display: flex;
+      margin-bottom: 16px;
+    }
+    .message .text {
+      padding: 12px 16px;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      line-height: 1.4;
+      font-size: 0.95rem;
+    }
+    .message.user {
+      justify-content: flex-end;
+    }
+    .message.user .text {
+      background-color: var(--message-user-bg);
+      color: #ffffff;
+    }
+    .message.bot {
+      justify-content: flex-start;
+    }
+    .message.bot .text {
+      background-color: var(--message-bot-bg);
+      color: var(--text-light);
+    }
+    .typing {
+      font-style: italic;
+      opacity: 0.75;
+    }
+    #input-container {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid #3c3d43;
+      background-color: rgba(32, 33, 35, 0.6);
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #555666;
+      background-color: rgba(32, 33, 35, 0.8);
+      color: var(--text-light);
+      resize: none;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    #user-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    #send-button {
+      margin-left: 12px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--accent);
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #send-button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    #send-button:not(:disabled):hover {
+      background-color: #0e9b70;
+    }
+  </style>
+</head>
+<body>
+  <!-- Preload background images so the environment converts their paths to URLs -->
+  <div style="display:none">
+    <img id="bg-jen1" src="ITCrowdJen1.jpg" alt="Jen background 1" />
+    <img id="bg-jen2" src="ITCrowdJen2.jpg" alt="Jen background 2" />
+    <img id="bg-moss1" src="ITCrowdMoss1.jpg" alt="Moss background 1" />
+    <img id="bg-moss2" src="ITCrowdMoss2.jpg" alt="Moss background 2" />
+    <img id="bg-roy1" src="ITCrowdRoy1.jpg" alt="Roy background 1" />
+    <img id="bg-roy2" src="ITCrowdRoy2.jpg" alt="Roy background 2" />
+  </div>
+  <!-- Sidebar overlay for mobile -->
+  <div id="sidebar-overlay"></div>
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <span>IT Crowd Chat</span>
+    </div>
+    <button id="new-chat-btn">+ New chat</button>
+    <div id="chat-list"></div>
+    <div id="sidebar-footer">
+      <div id="settings-toggle">⚙️ Settings</div>
+      <div id="settings-panel">
+        <label for="background-select">Character & background</label>
+        <select id="background-select"></select>
+      </div>
+    </div>
+  </div>
+  <div id="main">
+    <div id="chat-column">
+      <div id="chat-header">
+        <button id="sidebar-toggle-btn" aria-label="Toggle sidebar">Menu</button>
+        <span id="chat-title">New Chat</span>
+      </div>
+      <div id="chat-messages"></div>
+      <div id="input-container">
+        <textarea id="user-input" rows="1" placeholder="Send a message..." aria-label="Message input"></textarea>
+        <button id="send-button">Send</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Storage keys specific to IT Crowd Chat
+    const STORAGE_KEY = 'itCrowd_chats';
+    const SELECTED_CHAT_KEY = 'itCrowd_selectedChat';
+    const BACKGROUND_KEY = 'itCrowd_background';
+
+    // Response library per character and severity
+    const responses = {
+      'Roy': {
+        high: [
+          `Hello, IT here. Which piece of technology is misbehaving today?`,
+          `Alright — tell me what you were doing and what you expected to happen.`,
+          `Hi there. What device are you using, and what seems to be the issue?`,
+          `Thanks for getting in touch. Have you tried closing and reopening the application?`,
+          `Ok — before we dive in: is the device actually switched on and connected to power?`,
+          `Great. What error message (if any) popped up when this happened?`,
+          `Cool. Anything changed recently — new software, hardware, or updates?`,
+          `Just so we’re clear: what steps did you take before the problem occurred?`,
+          `Good stuff. Is the network cable plugged in, or are you on Wi‑Fi?`,
+          `Thanks. Can you tell me what the screen looks like right now (blank, frozen, error)?`
+        ],
+        medium: [
+          `Okay — could you send me a screenshot or even a photo of what you see?`,
+          `Right — unplug the device, count to ten, plug it back in. Let’s see if that helps.`,
+          `Can you check if any lights on the device are blinking or red?`,
+          `You said you’re on Wi‑Fi — try switching to a wired connection and tell me if anything changes.`,
+          `Open Task Manager (Ctrl+Shift+Esc) and tell me if any process is using 90+% CPU.`,
+          `Were any updates installed just before this happened?`,
+          `Log out of your account and log back in. Sometimes that resets the gremlins.`,
+          `Check that the monitor is set to the correct input (HDMI/DisplayPort). Yes, it matters.`,
+          `If it happens again exactly the same way, write down the steps you took.`,
+          `I’m going to remote in now. Please stay on the line and don’t click random stuff while I poke around.`
+        ],
+        severe: [
+          `Are you *sure* you’re using the computer and not just staring at a blank screen?`,
+          `Here’s an advanced one: is the device actually plugged in and switched on?`,
+          `Again: have you turned it off… and then turned it back on?`,
+          `If this were a film, the user would now plug in the wrong cable. Spoiler: that might be you.`,
+          `I assume your monitor is connected to the computer, not the coffee machine? No? Then let’s fix that.`,
+          `Frankly, if you haven’t checked the cable, power and screenshot by now, we’re going to assume the issue is *you*. (Kidding… maybe.)`,
+          `Plug the cable firmly into the back of the computer. Yes—firmly. Did the moon align yet? No? Hm.`,
+          `Would you like me to send the goth from the server room to stare at your issue until it fixes itself?`,
+          `At this stage I might have to ask you to stand aside while I perform a full systems ritual—no touching things.`,
+          `Ok. If you still haven’t done the basics, we’ll just assume you’re using the computer as a coaster. Ready for real help?`
+        ]
+      },
+      'Moss': {
+        high: [
+          `Please describe your problem in as much detail as you can tolerate; I may need to deploy major brainpower.`,
+          `Thank you. What device are you using, what operating system and what exactly is misbehaving?`,
+          `Hello. Are there any lights blinking? Are any cables loose? These details matter.`,
+          `Could you please capture the exact error message and provide the full text (if possible)?`,
+          `Before we proceed: has anything changed recently — updates, hardware, cables?`,
+          `Great. Is the computer connected to network? Wired or Wi‑Fi?`,
+          `Okay — is the device powered on and is the monitor actually displaying something?`,
+          `What version of the software are you running, and did this problem start after a change?`,
+          `Thank you. Are you able to replicate the issue consistently, or is it intermittent?`,
+          `Good. Let me know when you’re ready and we’ll begin with the diagnostic checkpoints.`
+        ],
+        medium: [
+          `Now we unplug the device, wait a silent ten seconds, then plug it back in. Let’s observe.`,
+          `Could you examine the device’s front panel and tell me if any LED is red or amber?`,
+          `Switch to a wired connection and determine whether the problem persists. Wireless is risky.`,
+          `Open Task Manager (Ctrl+Shift+Esc) and reveal any process consuming abnormal resources.`,
+          `Check for recent updates in Settings → System → Update. If one was applied just before failure, we might have a clue.`,
+          `Log out and log back in—this can flush the user session and sometimes clears weird states.`,
+          `Ensure your monitor’s input source matches the cable in use (HDMI vs DisplayPort). It’s trivial but important.`,
+          `If the error reoccurs, please note the sequence of clicks you made — we’ll reproduce precisely.`,
+          `Let me initiate a remote session. Kindly refrain from other actions while I inspect.`,
+          `Have you tried booting in safe mode and seeing if the issue persists? It helps isolate drivers vs apps.`
+        ],
+        severe: [
+          `Are we absolutely sure you’re *using* the computer rather than gazing at a blank screen? Because that would complicate things.`,
+          `Here we go: is the device *powered on and plugged in*? I appreciate this is cutting-edge trouble-shooting.`,
+          `Please confirm you have indeed turned off and then turned on the computer. Yes, I’ll keep asking.`,
+          `If we were in a cinematic scene, the user now attaches the wrong cable. Guess what — that might be you.`,
+          `In the port labelled ‘Internet’, do you see a cable? No? Then we may have found the problem.`,
+          `Monitor connected to the computer? Not the coffee machine or toaster? Good. Now we’re safe.`,
+          `Firmly plug the cable into the computer’s rear. Did the planetary alignment occur? No? Hmm.`,
+          `Would you prefer sending the goth from the server room over to stare at your screen? He’s surprisingly effective.`,
+          `At this juncture, I might need you to step aside while I deploy the heavy‑duty debugging ritual. Appreciate your cooperation.`,
+          `Look: if none of the above is done, we’ll presume you’re using the machine as a paperweight. Ready for serious help?`
+        ]
+      },
+      'Jen': {
+        high: [
+          `Hiya! I’m the tech‑department contact — tell me what’s going on and we’ll figure it out together.`,
+          `Hello! What device are you working on and what’s not behaving as expected?`,
+          `Thanks for reaching out. Have you tried closing and reopening the program just once?`,
+          `Just to check: is the machine turned on and plugged into power?`,
+          `Good day! Are you connected to the internet? Wired or Wi‑Fi?`,
+          `Before we dive deep: did anything change recently — new hardware, new software, update?`,
+          `So tell me what the screen shows now: blank, frozen, error, spinning circle?`,
+          `Nice — you’re doing great. Have you saved your work recently (just in case)?`,
+          `Can you tell me what operating system you’re using and whether the issue started suddenly?`,
+          `Okay — once you’re ready, I’ll walk you through some steps to get it working again.`
+        ],
+        medium: [
+          `Thank you. Could you send me a screenshot or photo of the issue so I can see what you’re seeing?`,
+          `Next: unplug the device, count to ten, and plug it back in. I know it seems simple but often works.`,
+          `Can you check whether any lights on the machine are blinking red or amber?`,
+          `If you’re on Wi‑Fi, could you switch to a wired connection and let me know what happens?`,
+          `Were there any updates installed just before this issue appeared? Those sometimes cause trouble.`,
+          `Log out of your account and then back in again. That sometimes refreshes the session.`,
+          `Please check that your monitor is set to the correct input (HDMI or DisplayPort). It matters.`,
+          `If this happens again, try to write down exactly what you clicked and did — that helps.`,
+          `I’m about to start a remote session. Please don’t click anything while I investigate, okay?`,
+          `Would you mind booting into safe mode to see if the error still appears? That tells us if it’s a driver issue.`
+        ],
+        severe: [
+          `Are you *sure* you’re using the computer and not just staring at the screen for moral support?`,
+          `Ok, here’s a radical one: is the device plugged in and switched on? I know — daring question.`,
+          `Again: have you tried turning it off, waiting, then turning it back on? I’ll be here when you finish.`,
+          `If this were a film, the user would now plug the wrong cable in. Spoiler: that might be you.`,
+          `Does the cable go into the port labelled ‘Internet’? No? Well, we may have a winner.`,
+          `Is your monitor plugged into the computer and not into the coffee machine? We’ll fix it nonetheless.`,
+          `Plug the cable firmly into the back of the machine. And yes—I expect you to push it in.`,
+          `Would you like me to summon the goth from the server room to stare at your setup until it says ‘fixed’? He’s available.`,
+          `At this point I may ask you to step aside while I perform the sacred systems ritual. Please remain calm.`,
+          `Look… if you haven’t done the basics by now, we’ll assume you’re using the computer as a coaster. Ready for real help?`
+        ]
+      }
+    };
+
+    // Background options mapping to characters
+    const backgroundOptions = {
+      jen1: { label: 'Jen background 1', type: 'image', imgId: 'bg-jen1', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Jen' },
+      jen2: { label: 'Jen background 2', type: 'image', imgId: 'bg-jen2', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Jen' },
+      moss1: { label: 'Moss background 1', type: 'image', imgId: 'bg-moss1', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Moss' },
+      moss2: { label: 'Moss background 2', type: 'image', imgId: 'bg-moss2', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Moss' },
+      roy1: { label: 'Roy background 1', type: 'image', imgId: 'bg-roy1', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Roy' },
+      roy2: { label: 'Roy background 2', type: 'image', imgId: 'bg-roy2', overlay: 'rgba(0, 0, 0, 0.35)', character: 'Roy' }
+    };
+
+    // Load chats from localStorage
+    let chats = {};
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      chats = stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      chats = {};
+    }
+    let selectedChatId = localStorage.getItem(SELECTED_CHAT_KEY) || null;
+    // Default background is roy1 if not set
+    let backgroundChoice = localStorage.getItem(BACKGROUND_KEY) || 'roy1';
+    if (!backgroundOptions[backgroundChoice]) {
+      backgroundChoice = 'roy1';
+      saveBackgroundChoice();
+    }
+    // Current character derived from background
+    let currentCharacter = backgroundOptions[backgroundChoice]?.character || 'Roy';
+
+    // DOM elements
+    const chatListEl = document.getElementById('chat-list');
+    const chatTitleEl = document.getElementById('chat-title');
+    const chatMessagesEl = document.getElementById('chat-messages');
+    const userInputEl = document.getElementById('user-input');
+    const sendButtonEl = document.getElementById('send-button');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const settingsToggle = document.getElementById('settings-toggle');
+    const settingsPanel = document.getElementById('settings-panel');
+    const backgroundSelect = document.getElementById('background-select');
+    const mainEl = document.getElementById('main');
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarOverlayEl = document.getElementById('sidebar-overlay');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const bodyEl = document.body;
+
+    function saveChats() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      } catch (e) {
+        console.error('Failed to save chats', e);
+      }
+    }
+    function saveSelectedChat() {
+      localStorage.setItem(SELECTED_CHAT_KEY, selectedChatId);
+    }
+    function saveBackgroundChoice() {
+      localStorage.setItem(BACKGROUND_KEY, backgroundChoice);
+    }
+    function generateChatId() {
+      return 'chat-' + Date.now();
+    }
+    function createNewChat() {
+      const id = generateChatId();
+      chats[id] = { messages: [] };
+      selectedChatId = id;
+      saveChats();
+      saveSelectedChat();
+      updateUI();
+      userInputEl.focus();
+    }
+    function getChatTitle(chat) {
+      if (chat.messages && chat.messages.length > 0) {
+        const firstMsg = chat.messages.find(m => m.sender === 'user') || chat.messages[0];
+        const text = firstMsg.text.trim();
+        return text.length > 0 ? text.slice(0, 30) + (text.length > 30 ? '…' : '') : 'New Chat';
+      }
+      return 'New Chat';
+    }
+    function renderChatList() {
+      chatListEl.innerHTML = '';
+      const ids = Object.keys(chats);
+      if (ids.length === 0) {
+        createNewChat();
+        return;
+      }
+      if (!selectedChatId || !chats[selectedChatId]) {
+        selectedChatId = ids[0];
+        saveSelectedChat();
+      }
+      ids.forEach(id => {
+        const div = document.createElement('div');
+        div.className = 'chat-item' + (id === selectedChatId ? ' active' : '');
+        div.textContent = getChatTitle(chats[id]);
+        div.addEventListener('click', () => {
+          if (selectedChatId !== id) {
+            selectedChatId = id;
+            saveSelectedChat();
+            updateUI();
+          }
+          // Close sidebar on mobile after selecting a chat
+          closeSidebar();
+        });
+        chatListEl.appendChild(div);
+      });
+    }
+    function renderMessages() {
+      chatMessagesEl.innerHTML = '';
+      const chat = chats[selectedChatId];
+      if (!chat) return;
+      chat.messages.forEach(m => appendMessageElement(m.text, m.sender));
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      chatTitleEl.textContent = getChatTitle(chat);
+    }
+    function appendMessageElement(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message ' + sender;
+      const textDiv = document.createElement('div');
+      textDiv.className = 'text' + (sender === 'typing' ? ' typing' : '');
+      textDiv.textContent = text;
+      msgDiv.appendChild(textDiv);
+      chatMessagesEl.appendChild(msgDiv);
+    }
+    function getRandomResponse(character, userCount) {
+      let category;
+      if (userCount <= 2) {
+        category = 'high';
+      } else if (userCount <= 6) {
+        category = 'medium';
+      } else {
+        category = 'severe';
+      }
+      const arr = responses[character][category];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    function handleSend() {
+      const text = userInputEl.value.trim();
+      if (!text) return;
+      if (!selectedChatId || !chats[selectedChatId]) {
+        createNewChat();
+      }
+      chats[selectedChatId].messages.push({ sender: 'user', text });
+      appendMessageElement(text, 'user');
+      userInputEl.value = '';
+      resizeTextarea();
+      saveChats();
+      // Show typing indicator
+      appendMessageElement(currentCharacter + ' is thinking...', 'bot');
+      userInputEl.disabled = true;
+      sendButtonEl.disabled = true;
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      // Compute user message count after adding this message
+      const chat = chats[selectedChatId];
+      const userCount = chat.messages.filter(m => m.sender === 'user').length;
+      const delay = 800 + Math.random() * 1200;
+      setTimeout(() => {
+        // Remove typing indicator if it has typing class (not used here)
+        const last = chatMessagesEl.lastChild;
+        if (last && last.querySelector('.typing')) {
+          chatMessagesEl.removeChild(last);
+        }
+        const reply = getRandomResponse(currentCharacter, userCount);
+        chats[selectedChatId].messages.push({ sender: 'bot', text: reply });
+        appendMessageElement(reply, 'bot');
+        saveChats();
+        userInputEl.disabled = false;
+        sendButtonEl.disabled = false;
+        userInputEl.focus();
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        renderChatList();
+      }, delay);
+    }
+    function resizeTextarea() {
+      userInputEl.style.height = 'auto';
+      userInputEl.style.height = userInputEl.scrollHeight + 'px';
+    }
+    function renderBackgroundOptions() {
+      backgroundSelect.innerHTML = '';
+      Object.keys(backgroundOptions).forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = backgroundOptions[key].label;
+        if (key === backgroundChoice) opt.selected = true;
+        backgroundSelect.appendChild(opt);
+      });
+    }
+    function applyBackground() {
+      let bg = backgroundOptions[backgroundChoice];
+      if (!bg) {
+        // fallback to roy1
+        backgroundChoice = 'roy1';
+        saveBackgroundChoice();
+        bg = backgroundOptions[backgroundChoice];
+        if (backgroundSelect.value !== backgroundChoice) {
+          backgroundSelect.value = backgroundChoice;
+        }
+      }
+      // update current character
+      currentCharacter = bg.character || 'Roy';
+      // set overlay color
+      document.documentElement.style.setProperty('--overlay-color', bg.overlay || 'rgba(0, 0, 0, 0.35)');
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundColor = bg.color || '#1f2028';
+      mainEl.style.backgroundImage = '';
+      mainEl.style.backgroundColor = bg.color || '#1f2028';
+      if (bg.type === 'image') {
+        const imgEl = bg.imgId ? document.getElementById(bg.imgId) : null;
+        if (imgEl) {
+          mainEl.style.backgroundImage = `url('${imgEl.src}')`;
+        }
+      }
+    }
+    function initSettings() {
+      settingsToggle.addEventListener('click', () => {
+        const visible = settingsPanel.style.display === 'block';
+        settingsPanel.style.display = visible ? 'none' : 'block';
+      });
+      renderBackgroundOptions();
+      backgroundSelect.addEventListener('change', () => {
+        backgroundChoice = backgroundSelect.value;
+        saveBackgroundChoice();
+        applyBackground();
+      });
+      applyBackground();
+    }
+    function updateUI() {
+      renderChatList();
+      renderMessages();
+    }
+    function initEventListeners() {
+      newChatBtn.addEventListener('click', () => {
+        createNewChat();
+        closeSidebar();
+      });
+      sendButtonEl.addEventListener('click', handleSend);
+      userInputEl.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+      userInputEl.addEventListener('input', resizeTextarea);
+      sidebarToggleBtn.addEventListener('click', () => {
+        if (isMobile()) {
+          openSidebar();
+        } else {
+          toggleSidebarCollapse();
+        }
+      });
+      sidebarOverlayEl.addEventListener('click', () => {
+        closeSidebar();
+      });
+      window.addEventListener('resize', () => {
+        if (isMobile()) {
+          bodyEl.classList.remove('sidebar-collapsed');
+          closeSidebar();
+          sidebarToggleBtn.textContent = 'Menu';
+        } else {
+          sidebarEl.classList.remove('open');
+          sidebarOverlayEl.style.display = 'none';
+          sidebarToggleBtn.textContent = bodyEl.classList.contains('sidebar-collapsed') ? 'Show menu' : 'Hide menu';
+        }
+      });
+    }
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+    function toggleSidebarCollapse() {
+      const collapsed = bodyEl.classList.toggle('sidebar-collapsed');
+      sidebarToggleBtn.textContent = collapsed ? 'Show menu' : 'Hide menu';
+    }
+    function openSidebar() {
+      if (isMobile()) {
+        sidebarEl.classList.add('open');
+        sidebarOverlayEl.style.display = 'block';
+        sidebarToggleBtn.textContent = 'Close menu';
+      } else {
+        bodyEl.classList.remove('sidebar-collapsed');
+        sidebarToggleBtn.textContent = 'Hide menu';
+      }
+    }
+    function closeSidebar() {
+      if (isMobile()) {
+        sidebarEl.classList.remove('open');
+        sidebarOverlayEl.style.display = 'none';
+        sidebarToggleBtn.textContent = 'Menu';
+      }
+    }
+    (function init() {
+      initEventListeners();
+      initSettings();
+      updateUI();
+      resizeTextarea();
+      sidebarToggleBtn.textContent = isMobile() ? 'Menu' : 'Hide menu';
+    })();
+  </script>
+</body>
+</html>
