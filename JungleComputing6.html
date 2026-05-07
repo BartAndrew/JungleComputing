@@ -312,7 +312,10 @@
             return false;
         };
 
-        const WS_URL = "ws://127.0.0.1:8080";
+        // Auto-detect environment: local dev vs production
+        const WS_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? "ws://127.0.0.1:8080"  // Local development
+            : "wss://your-backend-url-here.railway.app";  // Production - UPDATE THIS after deploying backend
 
         // State
         const state = {
