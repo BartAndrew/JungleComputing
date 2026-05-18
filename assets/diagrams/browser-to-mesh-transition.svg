@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 900" role="img" aria-labelledby="title desc">
+  <title id="title">Browser to Mesh Transition</title>
+  <desc id="desc">Three stage visual transition from passive browser clients to authority-assisted peer mesh to Jungle Computing city.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#020617"/><stop offset="1" stop-color="#07111f"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0284c7"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .title{font-family:Orbitron,Inter,sans-serif;font-weight:800;letter-spacing:4px;fill:#f8fafc}.heading{font-family:Inter,Arial,sans-serif;font-weight:800;fill:#e2e8f0;font-size:28px}.small{font-family:Inter,Arial,sans-serif;fill:#94a3b8;font-size:18px}.mono{font-family:JetBrains Mono,monospace;fill:#cbd5e1;font-size:15px}.panel{fill:rgba(15,23,42,.72);stroke:rgba(56,189,248,.22);stroke-width:2}.arrow{stroke:#38bdf8;stroke-width:5;fill:none;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#38bdf8"/></marker>
+  </defs>
+  <rect width="1800" height="900" fill="url(#bg)"/>
+  <text x="70" y="80" class="title" font-size="46">FROM PASSIVE BROWSERS TO A LIVING PEER MESH</text>
+  <text x="74" y="120" class="small">A progressive visual model for explaining how Jungle Computing changes the role of the browser.</text>
+
+  <g transform="translate(70 190)">
+    <rect width="500" height="560" rx="26" class="panel"/>
+    <text x="34" y="58" class="heading">1. Passive Clients</text>
+    <text x="34" y="92" class="small">Browsers request. Servers process.</text>
+    <g transform="translate(60 160)">
+      <rect x="155" y="145" width="130" height="90" rx="16" fill="#1e293b" stroke="#ef4444" stroke-width="3"/>
+      <text x="180" y="198" class="small">SERVER</text>
+      <rect x="160" y="300" width="120" height="60" rx="14" fill="#111827" stroke="#f97316" stroke-width="3"/>
+      <text x="185" y="338" class="small">DATA</text>
+      <g fill="#0f172a" stroke="#38bdf8" stroke-width="2">
+        <rect x="0" y="10" width="110" height="60" rx="12"/><rect x="310" y="10" width="110" height="60" rx="12"/><rect x="0" y="390" width="110" height="60" rx="12"/><rect x="310" y="390" width="110" height="60" rx="12"/>
+      </g>
+      <text x="22" y="48" class="mono">browser</text><text x="332" y="48" class="mono">browser</text><text x="22" y="428" class="mono">browser</text><text x="332" y="428" class="mono">browser</text>
+      <path d="M110 40 L170 145 M310 40 L270 145 M110 420 L170 235 M310 420 L270 235" stroke="#ef4444" stroke-width="4" opacity=".8"/>
+    </g>
+  </g>
+
+  <path d="M595 470 L700 470" class="arrow"/>
+
+  <g transform="translate(720 190)">
+    <rect width="500" height="560" rx="26" class="panel"/>
+    <text x="34" y="58" class="heading">2. Authority-Assisted Mesh</text>
+    <text x="34" y="92" class="small">Authority helps peers discover and connect.</text>
+    <g transform="translate(72 150)" filter="url(#glow)">
+      <circle cx="180" cy="40" r="38" fill="url(#gold)"/>
+      <text x="106" y="98" class="small">signalling / identity</text>
+      <g fill="#0f172a" stroke="#38bdf8" stroke-width="3">
+        <circle cx="50" cy="210" r="42"/><circle cx="310" cy="210" r="42"/><circle cx="100" cy="380" r="42"/><circle cx="270" cy="380" r="42"/>
+      </g>
+      <g stroke="#f59e0b" stroke-width="3" opacity=".75"><path d="M160 70 L70 180"/><path d="M200 70 L290 180"/><path d="M170 78 L110 350"/><path d="M190 78 L260 350"/></g>
+      <g stroke="#38bdf8" stroke-width="5" opacity=".9"><path d="M88 210 L268 210"/><path d="M70 245 L108 345"/><path d="M292 245 L272 338"/><path d="M132 380 L228 380"/><path d="M90 230 L240 360"/></g>
+      <text x="20" y="216" class="mono">peer</text><text x="280" y="216" class="mono">peer</text><text x="70" y="386" class="mono">peer</text><text x="240" y="386" class="mono">peer</text>
+    </g>
+  </g>
+
+  <path d="M1245 470 L1350 470" class="arrow"/>
+
+  <g transform="translate(1370 190)">
+    <rect width="360" height="560" rx="26" class="panel"/>
+    <text x="30" y="58" class="heading">3. Jungle City</text>
+    <text x="30" y="92" class="small">Peers become towers in a compute city.</text>
+    <g transform="translate(55 160)" filter="url(#glow)">
+      <g>
+        <rect x="90" y="30" width="60" height="250" rx="5" fill="url(#blue)"/><rect x="100" y="250" width="40" height="35" rx="3" fill="url(#gold)"/>
+        <rect x="170" y="90" width="54" height="190" rx="5" fill="url(#blue)"/><rect x="178" y="258" width="38" height="30" rx="3" fill="url(#gold)"/>
+        <rect x="20" y="130" width="50" height="150" rx="5" fill="url(#blue)"/><rect x="28" y="260" width="34" height="28" rx="3" fill="url(#gold)"/>
+        <rect x="235" y="160" width="42" height="120" rx="5" fill="url(#blue)"/><rect x="242" y="265" width="28" height="24" rx="3" fill="url(#gold)"/>
+      </g>
+      <g stroke="#38bdf8" stroke-width="4" opacity=".8"><path d="M70 190 L90 160"/><path d="M150 145 L170 170"/><path d="M224 180 L235 205"/><path d="M70 250 L235 255"/></g>
+      <ellipse cx="148" cy="300" rx="150" ry="35" fill="none" stroke="#38bdf8" stroke-width="2" opacity=".45"/>
+    </g>
+    <text x="30" y="675" class="small">Local mesh + shared foundation + independent upper layers.</text>
+  </g>
+</svg>
