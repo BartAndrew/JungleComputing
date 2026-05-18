@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jungle Computing | Interactive 3D Simulation</title>
+  <meta name="description" content="Explore an interactive 3D Jungle Computing simulation with peer nodes, topology controls, traffic pulses, and offline partitions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="three.min.js"></script>
+  <script src="OrbitControls.js"></script>
+</head>
+<body class="simulation-page">
+  <div class="site-shell simulation-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Back to Jungle Computing home">
+        <img src="assets/brand/jungle-computing-logo.svg" alt="" class="brand-mark">
+        <span>Jungle Computing</span>
+      </a>
+      <nav class="topnav" aria-label="Simulation navigation">
+        <a href="index.html#overview">Overview</a>
+        <a href="index.html#architecture">Architecture</a>
+        <a class="is-active" href="simulation.html">3D Simulation</a>
+        <a href="index.html#foundation">Foundation</a>
+      </nav>
+      <a class="topbar-link" href="index.html">Back Home</a>
+    </header>
+
+    <main class="simulation-main">
+      <section class="simulation-hero frame-panel">
+        <div>
+          <h1>Explore the Living Network</h1>
+          <p>
+            Drag to orbit the city, scroll to zoom, click towers to inspect nodes, and use the controls
+            to change topology, route work, broadcast synchronization, or partition part of the network.
+          </p>
+        </div>
+        <div class="sim-readouts" aria-label="Simulation readouts">
+          <article><span>Nodes</span><strong id="stat-nodes">0</strong></article>
+          <article><span>Links</span><strong id="stat-links">0</strong></article>
+          <article><span>Mode</span><strong id="stat-mode">Mesh</strong></article>
+          <article><span>Status</span><strong id="stat-status">Healthy</strong></article>
+        </div>
+      </section>
+
+      <section class="explorer-layout">
+        <aside class="simulation-controls frame-panel">
+          <div class="control-card">
+            <h2>Topology</h2>
+            <div class="button-row" role="group" aria-label="Topology controls">
+              <button class="chip-button is-active" data-topology="mesh">Partial Mesh</button>
+              <button class="chip-button" data-topology="star">Authority Star</button>
+              <button class="chip-button" data-topology="ring">Ring</button>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <h2>Simulation</h2>
+            <div class="button-row" role="group" aria-label="Simulation actions">
+              <button id="run-task" class="chip-button">Run Distributed Task</button>
+              <button id="broadcast-message" class="chip-button">Broadcast Sync</button>
+              <button id="toggle-offline" class="chip-button">Toggle Offline Zone</button>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <h2>Node Inspector</h2>
+            <div id="node-inspector" class="inspector-card">
+              <p>Click a tower in the 3D city to inspect its device type, role, status and active peers.</p>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <h2>Message Log</h2>
+            <div id="event-log" class="event-log" aria-live="polite"></div>
+          </div>
+        </aside>
+
+        <div class="explorer-stage frame-panel">
+          <canvas id="mesh-canvas" aria-label="Interactive 3D Jungle Computing city mesh simulation"></canvas>
+          <div class="stage-hint">Drag to orbit • Scroll to zoom • Click a tower</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

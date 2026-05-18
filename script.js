@@ -562,6 +562,7 @@ function setupMeshScene(reducedMotion) {
   }
 
   const { renderer, scene, camera } = base;
+  const immersiveMode = document.body.classList.contains("simulation-page");
   const nodeInspector = document.getElementById("node-inspector");
   const eventLog = document.getElementById("event-log");
   const statNodes = document.getElementById("stat-nodes");
@@ -569,15 +570,29 @@ function setupMeshScene(reducedMotion) {
   const statMode = document.getElementById("stat-mode");
   const statStatus = document.getElementById("stat-status");
 
-  camera.position.set(18, 26, 28);
-  scene.fog = new THREE.FogExp2(0x06101d, 0.025);
-  scene.add(new THREE.AmbientLight(0xbedfff, 1.35));
+  if (immersiveMode) {
+    camera.fov = 56;
+    camera.updateProjectionMatrix();
+  }
+  camera.position.set(immersiveMode ? 16 : 18, immersiveMode ? 25 : 26, immersiveMode ? 31 : 28);
+  scene.fog = new THREE.FogExp2(0x06101d, immersiveMode ? 0.012 : 0.025);
+  scene.add(new THREE.AmbientLight(0xbedfff, immersiveMode ? 2.1 : 1.35));
 
-  const sun = new THREE.DirectionalLight(0x9ddcff, 1.1);
+  const sun = new THREE.DirectionalLight(0x9ddcff, immersiveMode ? 1.65 : 1.1);
   sun.position.set(24, 30, 12);
   scene.add(sun);
 
-  const grid = new THREE.GridHelper(64, 16, 0x173049, 0x0a1528);
+  if (immersiveMode) {
+    const fillLight = new THREE.PointLight(0x38bdf8, 2.2, 80, 1.8);
+    fillLight.position.set(-10, 10, 8);
+    scene.add(fillLight);
+
+    const warmLight = new THREE.PointLight(0xf59e0b, 1.5, 72, 2);
+    warmLight.position.set(10, 5, -8);
+    scene.add(warmLight);
+  }
+
+  const grid = new THREE.GridHelper(immersiveMode ? 74 : 64, 16, immersiveMode ? 0x1fb6ff : 0x173049, 0x0a1528);
   grid.position.y = -0.3;
   scene.add(grid);
 
@@ -585,13 +600,39 @@ function setupMeshScene(reducedMotion) {
   controls.enableDamping = true;
   controls.enablePan = false;
   controls.autoRotate = !reducedMotion;
-  controls.autoRotateSpeed = 0.35;
+  controls.autoRotateSpeed = immersiveMode ? 0.18 : 0.35;
   controls.maxPolarAngle = Math.PI / 2.06;
-  controls.minDistance = 18;
-  controls.maxDistance = 54;
+  controls.minDistance = immersiveMode ? 10 : 18;
+  controls.maxDistance = immersiveMode ? 58 : 54;
+  controls.target.set(0, immersiveMode ? 1.2 : 0, 0);
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+
+  if (immersiveMode) {
+    const cityPositions = [
+      [-6, -4], [-3, -5], [0, -5.5], [3, -5], [6, -4],
+      [-7, 0], [-3.5, -0.8], [0, 0], [3.5, -0.8], [7, 0],
+      [-5, 4], [-1.8, 3.2], [1.8, 3.2], [5, 4],
+    ];
+
+    cityPositions.forEach(([x, z], index) => {
+      const cityTower = createTowerMesh({
+        width: 0.9 + (index % 3) * 0.16,
+        baseFloors: 4,
+        businessFloors: 2 + (index % 4),
+        businessHeight: 3.4 + (index % 5) * 0.8,
+      });
+      cityTower.position.set(x, 0.05, z);
+      cityTower.rotation.y = index * 0.38;
+      cityTower.traverse((child) => {
+        if (child.material && "emissiveIntensity" in child.material) {
+          child.material.emissiveIntensity *= 1.35;
+        }
+      });
+      scene.add(cityTower);
+    });
+  }
 
   const state = {
     topology: "mesh",
@@ -616,14 +657,24 @@ function setupMeshScene(reducedMotion) {
     { name: "Field-Node-07", type: "Mobile field node", role: "Intermittent sync", capacity: "Low", color: 0x22c55e, size: 0.85, pos: new THREE.Vector3(18, 1.2, -4) },
   ];
 
-  function makeNode(data) {
+  function makeNode(data, index) {
     const tower = createTowerMesh({
       width: data.size,
       baseFloors: 4,
       businessFloors: data.type === "Thin node" || data.type === "Mobile field node" ? 2 : 4,
       businessHeight: data.type === "Heavy compute node" ? 8.6 : 5.4,
     });
-    tower.position.copy(data.pos);
+    const nodePosition = data.pos.clone();
+    if (immersiveMode) {
+      if (index === 0) {
+        nodePosition.set(0, data.pos.y, 0);
+      } else {
+        const angle = ((index - 1) / (nodeData.length - 1)) * Math.PI * 2 - Math.PI / 2;
+        const radius = index % 2 === 0 ? 4.8 : 3.7;
+        nodePosition.set(Math.cos(angle) * radius, data.pos.y, Math.sin(angle) * radius);
+      }
+    }
+    tower.position.copy(nodePosition);
     tower.userData = {
       ...tower.userData,
       ...data,
@@ -638,6 +689,47 @@ function setupMeshScene(reducedMotion) {
         mesh.material.emissive = new THREE.Color(data.color);
       }
     });
+
+    if (immersiveMode) {
+      tower.scale.setScalar(1.35);
+
+      const nodePad = new THREE.Mesh(
+        new THREE.CylinderGeometry(data.size * 1.6, data.size * 2.2, 0.08, 40),
+        new THREE.MeshBasicMaterial({
+          color: data.color,
+          transparent: true,
+          opacity: 0.34,
+        })
+      );
+      nodePad.position.set(tower.position.x, -0.22, tower.position.z);
+      scene.add(nodePad);
+
+      const nodeBeam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.045, 0.045, 8, 10),
+        new THREE.MeshBasicMaterial({
+          color: data.color,
+          transparent: true,
+          opacity: 0.82,
+          depthTest: false,
+        })
+      );
+      nodeBeam.position.set(tower.position.x, 5, tower.position.z);
+      nodeBeam.renderOrder = 20;
+      scene.add(nodeBeam);
+
+      const nodeBeacon = new THREE.Mesh(
+        new THREE.SphereGeometry(0.65, 18, 18),
+        new THREE.MeshBasicMaterial({
+          color: data.color,
+          transparent: true,
+          opacity: 0.95,
+          depthTest: false,
+        })
+      );
+      nodeBeacon.position.set(tower.position.x, 9.4, tower.position.z);
+      nodeBeacon.renderOrder = 21;
+      scene.add(nodeBeacon);
+    }
 
     scene.add(tower);
     state.nodes.push(tower);
@@ -659,7 +751,7 @@ function setupMeshScene(reducedMotion) {
     const material = new THREE.MeshBasicMaterial({
       color: kind === "authority" ? 0xf59e0b : 0x38bdf8,
       transparent: true,
-      opacity: kind === "authority" ? 0.72 : 0.38,
+      opacity: immersiveMode ? (kind === "authority" ? 0.94 : 0.66) : (kind === "authority" ? 0.72 : 0.38),
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.userData = { a, b, kind };
