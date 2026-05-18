@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jungle Computing | Browser-First Distributed Systems</title>
-  <meta name="description" content="Jungle Computing is a browser-first, peer-to-peer distributed computing model where devices become towers, local clusters become cities, and federated sites become islands.">
+  <title>Jungle Computing | Decentralized Computational Ecosystem</title>
+  <meta name="description" content="Jungle Computing is a peer-to-peer computational ecosystem where every device is a node, every node is a tower, and every tower forms part of a living intelligent network.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -20,321 +20,159 @@
         <span>Jungle Computing</span>
       </a>
       <nav class="topnav" aria-label="Primary">
-        <a href="#overview">Overview</a>
-        <a href="#transition">From Monolith</a>
-        <a href="#anatomy">Tower Anatomy</a>
-        <a href="#simulation">City Mesh</a>
-        <a href="#federation">Islands</a>
-        <a href="#docs">Docs</a>
+        <a class="is-active" href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#network">P2P Network</a>
+        <a href="#foundation">Foundation</a>
+        <a href="#ecosystem">Ecosystem</a>
+        <a href="#roadmap">Roadmap</a>
       </nav>
       <a class="topbar-link" href="https://github.com/BartAndrew/JungleComputing" target="_blank" rel="noreferrer">GitHub</a>
     </header>
 
     <main>
-      <section id="hero" class="hero">
+      <section id="hero" class="hero frame-panel reactive-panel">
+        <img class="hero-bg" src="assets/crops/hero-city.png" alt="Futuristic Jungle Computing city skyline">
+        <canvas id="hero-canvas" aria-label="Reactive 3D Jungle Computing city"></canvas>
         <div class="hero-copy">
-          <p class="section-tag">Browser-first distributed architecture</p>
-          <h1>Every device becomes a tower. Every tower joins a living city of computation.</h1>
+          <h1>Jungle<br>Computing</h1>
+          <p class="hero-kicker">A decentralized computational ecosystem for the future</p>
           <p class="hero-text">
-            Jungle Computing reframes the web from centralized request handling into a visual,
-            peer-to-peer mesh where browsers compute, store, synchronize, route, and collaborate.
+            Jungle Computing is a peer-to-peer computational framework where every device is a node,
+            every node is a tower, and every tower is part of a living, intelligent network.
           </p>
+          <a class="button button-primary" href="#network">Explore the network</a>
+        </div>
+      </section>
+
+      <section id="overview" class="feature-strip frame-panel">
+        <article class="feature-item reactive-panel">
+          <span class="icon-net"></span>
+          <div><h2>Decentralized</h2><p>No central server. No single point of failure. The network is the computer.</p></div>
+        </article>
+        <article class="feature-item reactive-panel">
+          <span class="icon-peer"></span>
+          <div><h2>Peer to Peer</h2><p>Every device communicates directly. Data, compute and trust flow between peers.</p></div>
+        </article>
+        <article class="feature-item reactive-panel">
+          <span class="icon-cube"></span>
+          <div><h2>Scalable</h2><p>From a single device to planet-scale networks. Designed to grow infinitely.</p></div>
+        </article>
+        <article class="feature-item reactive-panel">
+          <span class="icon-shield"></span>
+          <div><h2>Resilient</h2><p>Built for reliability, redundancy and self-healing across dynamic environments.</p></div>
+        </article>
+        <article class="feature-item reactive-panel">
+          <span class="icon-lock"></span>
+          <div><h2>Sovereign</h2><p>You own your data. You control your compute. You are the network.</p></div>
+        </article>
+      </section>
+
+      <section id="architecture" class="model-section frame-panel">
+        <div class="model-copy">
+          <h2>The Jungle Computing Model</h2>
+          <p>Imagine a futuristic city. Every building is a computer. The size of the building represents its compute power. Inside every building are layers.</p>
+          <p>The foundational layers are shared by all towers. They handle identity, security, networking, storage, communication, orchestration and the core protocols that make the network work.</p>
+          <p>Above the foundation, every tower is free to build its own business, application, service or logic. These layers are customizable, private and independent.</p>
+          <p>Together, these towers form a massive peer-to-peer network where resources, information and value flow freely and efficiently.</p>
+        </div>
+        <div class="tower-diagram reactive-panel">
+          <div class="tower-label tower-label-business">Business layers <small>Customizable</small></div>
+          <div class="tower-label tower-label-foundation">Foundational layers <small>Standardized for all</small></div>
+          <img class="tower-reference" src="assets/crops/tower-model.png" alt="Layered Jungle Computing tower model">
+          <canvas id="tower-canvas" aria-label="Interactive 3D tower anatomy"></canvas>
+          <ul class="tower-callouts">
+            <li>Application Logic</li>
+            <li>Workflows</li>
+            <li>APIs &amp; Services</li>
+            <li>Business Data</li>
+            <li>User Experience</li>
+            <li>Compute Abstraction</li>
+            <li>P2P Networking</li>
+            <li>Data Layer</li>
+            <li>Security &amp; Identity</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="network" class="living-section frame-panel">
+        <h2>A Living Network</h2>
+        <div class="living-grid">
+          <article class="living-card reactive-panel"><span>1</span><h3>Every device is a tower</h3><img src="assets/crops/network-1.png" alt="Tower city node"><p>Devices of all sizes become towers in the network.</p></article>
+          <article class="living-card reactive-panel"><span>2</span><h3>Foundation is unified</h3><img src="assets/crops/network-2.png" alt="Unified foundation tower"><p>All towers share the same foundational layers.</p></article>
+          <article class="living-card reactive-panel"><span>3</span><h3>Business layers are flexible</h3><img src="assets/crops/network-3.png" alt="Layered computing tower"><p>Build anything on top. Each tower is unique.</p></article>
+          <article class="living-card reactive-panel"><span>4</span><h3>P2P communication is native</h3><img src="assets/crops/network-4.png" alt="Peer-to-peer city links"><p>Towers communicate directly. No intermediaries.</p></article>
+          <article class="living-card reactive-panel"><span>5</span><h3>Resources flow freely</h3><img src="assets/crops/network-5.png" alt="City resource lines"><p>Compute, data and value flow across the network.</p></article>
+          <article class="living-card reactive-panel"><span>6</span><h3>Networks connect to networks</h3><img src="assets/crops/network-6.png" alt="Connected cities"><p>Cities connect to cities. Networks connect globally.</p></article>
+          <article class="living-card reactive-panel"><span>7</span><h3>One ecosystem. One intelligence.</h3><img src="assets/crops/network-7.png" alt="Computational world"><p>A decentralized world of computational abundance.</p></article>
+        </div>
+      </section>
+
+      <section id="foundation" class="panel-grid">
+        <article class="info-panel frame-panel reactive-panel">
+          <h2>Core Principles</h2>
+          <ul class="principle-list">
+            <li>Decentralization by Design</li>
+            <li>Peer-to-Peer Everything</li>
+            <li>Universal Foundation</li>
+            <li>Sovereign by Default</li>
+            <li>Open, Transparent, Verifiable</li>
+            <li>Scalable Without Limits</li>
+          </ul>
+        </article>
+        <article class="info-panel stack-panel frame-panel reactive-panel">
+          <h2>Technology Stack</h2>
+          <img src="assets/crops/stack-layers.png" alt="Layered technology stack">
+        </article>
+        <article class="info-panel frame-panel reactive-panel">
+          <h2>Use Cases</h2>
+          <ul class="principle-list">
+            <li>Distributed AI &amp; Compute</li>
+            <li>Edge Computing Networks</li>
+            <li>Decentralized Marketplaces</li>
+            <li>Data Collaboration</li>
+            <li>Autonomous Organizations</li>
+            <li>Web3 &amp; Beyond</li>
+          </ul>
+        </article>
+        <article id="ecosystem" class="info-panel vision-panel frame-panel reactive-panel">
+          <h2>The Vision</h2>
+          <p>Jungle Computing enables a world where billions of devices work together as one intelligent system.</p>
+          <p>No central control. No gatekeepers. Just a network of sovereign nodes building the future together.</p>
+          <a class="button button-secondary" href="#roadmap">Join the movement</a>
+        </article>
+      </section>
+
+      <section id="roadmap" class="build-section frame-panel">
+        <div class="build-brand">
+          <img src="assets/brand/jungle-computing-logo.svg" alt="" class="brand-mark-large">
+          <div><h2>Jungle Computing</h2><p>The Computational Layer for a Decentralized World</p></div>
+        </div>
+        <div class="build-actions">
+          <h2>Built for developers. For builders. For everyone.</h2>
+          <p>Open Source • Community Driven • Future Focused</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#simulation">Launch the simulation</a>
-            <a class="button button-secondary" href="#anatomy">Explore the architecture</a>
-          </div>
-          <dl class="hero-metrics" aria-label="Jungle Computing demo metrics">
-            <div>
-              <dt>Foundation layers</dt>
-              <dd>4 shared floors</dd>
-            </div>
-            <div>
-              <dt>Interaction modes</dt>
-              <dd>Mesh, task, offline</dd>
-            </div>
-            <div>
-              <dt>Delivery model</dt>
-              <dd>Static-site simulation first</dd>
-            </div>
-          </dl>
-        </div>
-        <div class="hero-visual">
-          <canvas id="hero-canvas" aria-label="Animated Jungle Computing city"></canvas>
-          <aside class="hero-panel">
-            <h2>What you are seeing</h2>
-            <ul class="signal-list">
-              <li><span class="signal signal-foundation"></span>Shared foundation layers</li>
-              <li><span class="signal signal-business"></span>Business and application floors</li>
-              <li><span class="signal signal-link"></span>Peer messaging and task routing</li>
-            </ul>
-          </aside>
-        </div>
-      </section>
-
-      <section id="overview" class="panel-section">
-        <div class="section-heading">
-          <p class="section-tag">The concept</p>
-          <h2>Jungle Computing turns browsers from thin clients into active peers.</h2>
-          <p>
-            The browser becomes a compute node, data replica, visualization surface, and network participant.
-            A small authority layer can still exist for identity, signalling, and discovery, but the work no longer
-            has to live permanently in the middle.
-          </p>
-        </div>
-        <div class="concept-grid">
-          <article class="concept-card">
-            <h3>Towers</h3>
-            <p>Each participating computer is represented as a tower whose scale reflects its compute, storage, and network capacity.</p>
-          </article>
-          <article class="concept-card">
-            <h3>Foundations</h3>
-            <p>Every tower shares the same four foundation layers: security, storage, peer communication, and compute abstraction.</p>
-          </article>
-          <article class="concept-card">
-            <h3>Cities</h3>
-            <p>Local meshes become cities where latency is low, synchronization is fast, and peers can collaborate directly.</p>
-          </article>
-          <article class="concept-card">
-            <h3>Islands</h3>
-            <p>Federated clusters become islands connected through controlled gateways rather than unrestricted central flooding.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="transition" class="panel-section transition-section">
-        <div class="section-heading">
-          <p class="section-tag">From monolith to mesh</p>
-          <h2>Centralized web architecture works, but it concentrates cost, state, and failure in the middle.</h2>
-        </div>
-        <div class="transition-layout">
-          <div class="mode-switch" role="tablist" aria-label="Architecture model switcher">
-            <button class="mode-button is-active" data-mode="centralized" role="tab" aria-selected="true">Centralized</button>
-            <button class="mode-button" data-mode="hybrid" role="tab" aria-selected="false">Hybrid</button>
-            <button class="mode-button" data-mode="mesh" role="tab" aria-selected="false">Mesh</button>
-          </div>
-          <div class="diagram-card">
-            <div class="diagram" id="architecture-diagram" data-mode="centralized" aria-live="polite">
-              <div class="diagram-column">
-                <div class="diagram-node browser-node">Browsers</div>
-                <div class="diagram-rail"></div>
-                <div class="diagram-node server-node">App / API Server</div>
-                <div class="diagram-rail"></div>
-                <div class="diagram-node database-node">Database</div>
-              </div>
-              <div class="diagram-mesh">
-                <div class="mesh-node">Peer 01</div>
-                <div class="mesh-node">Peer 02</div>
-                <div class="mesh-node">Peer 03</div>
-                <div class="mesh-node mesh-node-authority">Authority</div>
-                <div class="mesh-node">Peer 04</div>
-                <div class="mesh-node">Peer 05</div>
-                <div class="mesh-node">Peer 06</div>
-                <span class="mesh-link mesh-link-a"></span>
-                <span class="mesh-link mesh-link-b"></span>
-                <span class="mesh-link mesh-link-c"></span>
-                <span class="mesh-link mesh-link-d"></span>
-                <span class="mesh-link mesh-link-e"></span>
-              </div>
-            </div>
-          </div>
-          <div class="explain-card" id="mode-copy">
-            <h3>Centralized model</h3>
-            <p>Browsers send requests upward, servers process nearly everything, and the database becomes the permanent center of truth and pressure.</p>
-            <ul class="detail-list">
-              <li>Compute and storage concentrate in one place.</li>
-              <li>Latency and outage risk increase with distance and scale.</li>
-              <li>Offline operation is weak unless explicitly engineered.</li>
-            </ul>
+            <a class="button button-primary" href="https://github.com/BartAndrew/JungleComputing" target="_blank" rel="noreferrer">Star on GitHub</a>
+            <a class="button button-secondary" href="docs/01-concept-overview.md" target="_blank" rel="noreferrer">View Documentation</a>
+            <a class="button button-secondary" href="#overview">Join Community</a>
           </div>
         </div>
-      </section>
-
-      <section id="anatomy" class="panel-section anatomy-section">
-        <div class="section-heading">
-          <p class="section-tag">Tower anatomy</p>
-          <h2>Every node shares the same foundation, then diverges into its own business layers.</h2>
-          <p>
-            The orange floors are fixed across the whole ecosystem. The blue floors above them can host AI agents,
-            workflows, APIs, visualizations, repair systems, or any application-specific logic.
-          </p>
-        </div>
-        <div class="anatomy-layout">
-          <div class="anatomy-copy">
-            <div class="floor-buttons" role="tablist" aria-label="Tower layer focus">
-              <button class="floor-button is-active" data-focus="all">All layers</button>
-              <button class="floor-button" data-focus="foundation">Foundation view</button>
-              <button class="floor-button" data-focus="business">Business view</button>
-              <button class="floor-button" data-focus="pulse">Run data pulse</button>
-            </div>
-            <div class="layer-stack" id="layer-stack">
-              <button class="layer-row" data-layer="security">
-                <span>01</span>
-                <div>
-                  <strong>Security and trust</strong>
-                  <p>Identity, encryption, trust boundaries, signatures, permissions.</p>
-                </div>
-              </button>
-              <button class="layer-row" data-layer="storage">
-                <span>02</span>
-                <div>
-                  <strong>Data and storage</strong>
-                  <p>Local-first persistence, caching, replication, CRDT-ready state.</p>
-                </div>
-              </button>
-              <button class="layer-row" data-layer="communication">
-                <span>03</span>
-                <div>
-                  <strong>Peer communication</strong>
-                  <p>WebRTC, signalling, STUN/TURN, message routing, synchronization.</p>
-                </div>
-              </button>
-              <button class="layer-row" data-layer="compute">
-                <span>04</span>
-                <div>
-                  <strong>Compute abstraction</strong>
-                  <p>Workers, WASM, WebGPU, scheduling, inference, distributed execution.</p>
-                </div>
-              </button>
-              <button class="layer-row" data-layer="business">
-                <span>05+</span>
-                <div>
-                  <strong>Business layers</strong>
-                  <p>Repair workflows, AI agents, simulations, dashboards, collaboration, APIs.</p>
-                </div>
-              </button>
-            </div>
-            <div class="inspector-card" id="tower-inspector">
-              <h3>Layer inspector</h3>
-              <p>Select a floor or click the tower to inspect how that layer contributes to the node.</p>
-            </div>
-          </div>
-          <div class="anatomy-visual">
-            <canvas id="tower-canvas" aria-label="3D tower anatomy"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <section id="simulation" class="panel-section simulation-section">
-        <div class="section-heading">
-          <p class="section-tag">City mesh simulation</p>
-          <h2>See a local cluster behave like a living peer network.</h2>
-          <p>
-            This simulation shows how a set of devices can discover neighbors, exchange traffic, route a compute task
-            to a stronger node, and continue operating when part of the city goes offline.
-          </p>
-        </div>
-        <div class="simulation-layout">
-          <div class="simulation-controls">
-            <div class="control-card">
-              <h3>Topology</h3>
-              <div class="button-row">
-                <button class="chip-button is-active" data-topology="mesh">Partial mesh</button>
-                <button class="chip-button" data-topology="star">Authority star</button>
-                <button class="chip-button" data-topology="ring">Ring</button>
-              </div>
-            </div>
-            <div class="control-card">
-              <h3>Simulation</h3>
-              <div class="button-row">
-                <button id="run-task" class="chip-button">Run distributed task</button>
-                <button id="broadcast-message" class="chip-button">Broadcast sync</button>
-                <button id="toggle-offline" class="chip-button">Toggle offline zone</button>
-              </div>
-            </div>
-            <div class="control-card">
-              <h3>Node inspector</h3>
-              <div id="node-inspector" class="inspector-card">
-                <p>Click a node in the 3D city to inspect its device type, role, and active connections.</p>
-              </div>
-            </div>
-            <div class="control-card">
-              <h3>Message log</h3>
-              <div id="event-log" class="event-log" aria-live="polite"></div>
-            </div>
-          </div>
-          <div class="simulation-stage">
-            <canvas id="mesh-canvas" aria-label="3D city mesh simulation"></canvas>
-            <div class="sim-stats">
-              <article>
-                <span>Nodes</span>
-                <strong id="stat-nodes">0</strong>
-              </article>
-              <article>
-                <span>Links</span>
-                <strong id="stat-links">0</strong>
-              </article>
-              <article>
-                <span>Mode</span>
-                <strong id="stat-mode">Mesh</strong>
-              </article>
-              <article>
-                <span>Status</span>
-                <strong id="stat-status">Healthy</strong>
-              </article>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="federation" class="panel-section federation-section">
-        <div class="section-heading">
-          <p class="section-tag">Island computing</p>
-          <h2>Local cities can federate into governed islands without falling back to one global monolith.</h2>
-          <p>
-            An island may represent a branch, workshop group, warehouse, school, sovereign region, or datacenter cluster.
-            It can define its own trust, data policy, and gateway behavior while still connecting outward.
-          </p>
-        </div>
-        <div class="federation-layout">
-          <div class="federation-visual">
-            <img src="assets/diagrams/island-computing-federation-map.svg" alt="Diagram showing island computing federation map">
-          </div>
-          <div class="federation-copy">
-            <article class="federation-card">
-              <h3>Local autonomy</h3>
-              <p>Each island can continue operating if a wide-area bridge becomes unreliable or goes offline completely.</p>
-            </article>
-            <article class="federation-card">
-              <h3>Controlled gateways</h3>
-              <p>Instead of routing every transaction through a central cloud, islands expose selected routes, policies, and trust relationships.</p>
-            </article>
-            <article class="federation-card">
-              <h3>Delayed synchronization</h3>
-              <p>When a bridge reconnects, queued state can synchronize back into the federation without abandoning local-first operation.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="docs" class="panel-section docs-section">
-        <div class="section-heading">
-          <p class="section-tag">Documentation and direction</p>
-          <h2>The site narrative follows the repository design documents.</h2>
-        </div>
-        <div class="docs-grid">
-          <a class="doc-card" href="docs/01-concept-overview.md" target="_blank" rel="noreferrer">
-            <h3>Concept overview</h3>
-            <p>What Jungle Computing is, why it exists, and how the city metaphor works.</p>
-          </a>
-          <a class="doc-card" href="docs/02-from-monolith-to-mesh.md" target="_blank" rel="noreferrer">
-            <h3>From monolith to mesh</h3>
-            <p>The architectural transition from centralized browser apps to direct peer communication.</p>
-          </a>
-          <a class="doc-card" href="docs/03-architecture.md" target="_blank" rel="noreferrer">
-            <h3>Architecture</h3>
-            <p>The four shared layers, browser constraints, node roles, and synchronization model.</p>
-          </a>
-          <a class="doc-card" href="docs/04-visual-language-and-ux.md" target="_blank" rel="noreferrer">
-            <h3>Visual language and UX</h3>
-            <p>The premium neon city direction, interactive expectations, and educational experience goals.</p>
-          </a>
+        <div class="connect-panel">
+          <h2>Connect</h2>
+          <a href="https://github.com/BartAndrew/JungleComputing" target="_blank" rel="noreferrer">GitHub Repository</a>
+          <a href="docs/03-architecture.md" target="_blank" rel="noreferrer">Documentation</a>
+          <a href="docs/02-from-monolith-to-mesh.md" target="_blank" rel="noreferrer">Discussions</a>
+          <a href="docs/04-visual-language-and-ux.md" target="_blank" rel="noreferrer">Community</a>
         </div>
       </section>
     </main>
 
     <footer class="footer">
-      <p>Jungle Computing is presented here as a static-site educational simulation with a path toward live peer networking.</p>
-      <a href="https://github.com/BartAndrew/JungleComputing" target="_blank" rel="noreferrer">Open the repository</a>
+      <span>Jungle Computing</span>
+      <span>Decentralized</span>
+      <span>Peer to Peer</span>
+      <span>Sovereign</span>
+      <span>Limitless</span>
     </footer>
   </div>
 

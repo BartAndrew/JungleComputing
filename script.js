@@ -5,7 +5,34 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTowerScene(reducedMotion);
   setupMeshScene(reducedMotion);
   setupHeroScene(reducedMotion);
+  setupReactivePanels(reducedMotion);
 });
+
+function setupReactivePanels(reducedMotion) {
+  const panels = Array.from(document.querySelectorAll(".reactive-panel"));
+  if (!panels.length || reducedMotion) {
+    return;
+  }
+
+  panels.forEach((panel) => {
+    panel.addEventListener("pointermove", (event) => {
+      const rect = panel.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      panel.style.setProperty("--mx", `${Math.round(x * 100)}%`);
+      panel.style.setProperty("--my", `${Math.round(y * 100)}%`);
+      panel.style.setProperty("--ry", `${(x - 0.5) * 5}deg`);
+      panel.style.setProperty("--rx", `${(0.5 - y) * 5}deg`);
+    });
+
+    panel.addEventListener("pointerleave", () => {
+      panel.style.setProperty("--ry", "0deg");
+      panel.style.setProperty("--rx", "0deg");
+      panel.style.setProperty("--mx", "50%");
+      panel.style.setProperty("--my", "50%");
+    });
+  });
+}
 
 function setupArchitectureModes() {
   const diagram = document.getElementById("architecture-diagram");
@@ -324,7 +351,7 @@ function setupTowerScene(reducedMotion) {
   const layerRows = Array.from(document.querySelectorAll(".layer-row"));
   const base = createCanvasScene(canvas, { fov: 34, far: 120 });
 
-  if (!base || !inspector) {
+  if (!base) {
     return;
   }
 
@@ -410,7 +437,9 @@ function setupTowerScene(reducedMotion) {
   function setInspector(layer) {
     const detail = layerDetails[layer] || layerDetails.security;
     highlightedLayer = layer;
-    inspector.innerHTML = `<h3>${detail.title}</h3><p>${detail.text}</p>`;
+    if (inspector) {
+      inspector.innerHTML = `<h3>${detail.title}</h3><p>${detail.text}</p>`;
+    }
     layerRows.forEach((row) => {
       row.classList.toggle("is-selected", row.dataset.layer === layer);
     });
