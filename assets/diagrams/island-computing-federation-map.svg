@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Island Computing Federation Map</title>
+  <desc id="desc">Federated Jungle Computing cities and islands connected across a regional distributed network.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="1" stop-color="#07111f"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="cityBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="foundationGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <filter id="glowBlue"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowGold"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .title{font-family:Orbitron,Inter,sans-serif;font-weight:800;letter-spacing:4px;fill:#f8fafc}
+      .label{font-family:Inter,Arial,sans-serif;fill:#e2e8f0;font-size:22px;font-weight:700}
+      .small{font-family:Inter,Arial,sans-serif;fill:#94a3b8;font-size:18px}
+      .panel{fill:rgba(15,23,42,.72);stroke:rgba(56,189,248,.2);stroke-width:2}
+    </style>
+  </defs>
+
+  <rect width="1800" height="1000" fill="url(#bg)"/>
+  <rect y="620" width="1800" height="380" fill="url(#water)" opacity="0.9"/>
+
+  <text x="70" y="88" class="title" font-size="52">ISLAND COMPUTING FEDERATION</text>
+  <text x="74" y="128" class="small">Local Jungle Computing cities cluster into governed islands and federated regional networks.</text>
+
+  <!-- Islands -->
+  <g opacity="0.9">
+    <path d="M180 700 C240 610 360 600 470 650 C560 690 610 770 590 850 C560 930 420 960 280 920 C180 890 130 790 180 700Z" fill="#0f2a45" stroke="#1e40af" stroke-width="2"/>
+    <path d="M720 540 C820 470 980 470 1090 540 C1170 600 1200 720 1150 810 C1090 900 930 930 800 900 C700 870 640 780 650 680 C660 620 680 570 720 540Z" fill="#10253d" stroke="#2563eb" stroke-width="2"/>
+    <path d="M1290 690 C1370 620 1490 610 1600 660 C1690 710 1720 800 1690 880 C1650 950 1520 980 1400 950 C1320 930 1260 850 1260 790 C1260 750 1270 720 1290 690Z" fill="#0d2238" stroke="#1d4ed8" stroke-width="2"/>
+  </g>
+
+  <!-- Cities -->
+  <g filter="url(#glowBlue)">
+    <!-- Island 1 city -->
+    <rect x="310" y="640" width="36" height="160" fill="url(#cityBlue)" rx="4"/>
+    <rect x="316" y="782" width="24" height="22" fill="url(#foundationGold)" rx="2"/>
+    <rect x="360" y="680" width="28" height="120" fill="url(#cityBlue)" rx="4"/>
+    <rect x="365" y="785" width="18" height="18" fill="url(#foundationGold)" rx="2"/>
+    <rect x="405" y="700" width="24" height="100" fill="url(#cityBlue)" rx="4"/>
+
+    <!-- Island 2 city -->
+    <rect x="850" y="520" width="48" height="230" fill="url(#cityBlue)" rx="4"/>
+    <rect x="858" y="730" width="32" height="26" fill="url(#foundationGold)" rx="2"/>
+    <rect x="915" y="580" width="40" height="170" fill="url(#cityBlue)" rx="4"/>
+    <rect x="923" y="732" width="24" height="20" fill="url(#foundationGold)" rx="2"/>
+    <rect x="980" y="630" width="32" height="120" fill="url(#cityBlue)" rx="4"/>
+
+    <!-- Island 3 city -->
+    <rect x="1440" y="710" width="44" height="200" fill="url(#cityBlue)" rx="4"/>
+    <rect x="1448" y="892" width="28" height="22" fill="url(#foundationGold)" rx="2"/>
+    <rect x="1500" y="760" width="36" height="150" fill="url(#cityBlue)" rx="4"/>
+    <rect x="1507" y="895" width="22" height="18" fill="url(#foundationGold)" rx="2"/>
+  </g>
+
+  <!-- Federation arcs -->
+  <g fill="none" stroke="#38bdf8" stroke-width="5" opacity="0.85" filter="url(#glowBlue)">
+    <path d="M430 680 C600 500 760 470 860 560"/>
+    <path d="M1020 580 C1180 600 1310 700 1450 760"/>
+  </g>
+
+  <!-- Gateway nodes -->
+  <g filter="url(#glowGold)">
+    <circle cx="620" cy="520" r="14" fill="#f59e0b"/>
+    <circle cx="1220" cy="640" r="14" fill="#f59e0b"/>
+  </g>
+
+  <!-- Panels -->
+  <g transform="translate(70 180)">
+    <rect width="460" height="240" rx="22" class="panel"/>
+    <text x="28" y="50" class="label">City = Local Mesh Cluster</text>
+    <text x="28" y="92" class="small">A city represents a localized compute environment.</text>
+    <text x="28" y="136" class="small">Examples:</text>
+    <text x="48" y="172" class="small">• Workshop</text>
+    <text x="48" y="202" class="small">• Warehouse</text>
+    <text x="220" y="172" class="small">• Home office</text>
+    <text x="220" y="202" class="small">• Branch site</text>
+  </g>
+
+  <g transform="translate(1260 160)">
+    <rect width="470" height="320" rx="22" class="panel"/>
+    <text x="28" y="52" class="label">Island = Federated Governance Zone</text>
+    <text x="28" y="100" class="small">Islands coordinate multiple cities using:</text>
+    <text x="40" y="148" class="small">• Shared trust boundaries</text>
+    <text x="40" y="186" class="small">• Controlled federation gateways</text>
+    <text x="40" y="224" class="small">• Localized data ownership</text>
+    <text x="40" y="262" class="small">• Regional AI and compute pools</text>
+  </g>
+
+  <text x="730" y="950" class="small">Island Computing extends local Jungle Computing meshes into federated regional networks.</text>
+</svg>
