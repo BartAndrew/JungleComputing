@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Jungle Computing Tower Anatomy</title>
+  <desc id="desc">A cutaway tower showing shared foundation layers in gold and business layers in neon blue.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#020617"/><stop offset="1" stop-color="#07111f"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="0.5" stop-color="#0ea5e9"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="0.5" stop-color="#f59e0b"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>.title{font-family:Orbitron,Inter,sans-serif;font-weight:800;letter-spacing:4px;fill:#f8fafc}.label{font-family:Inter,Arial,sans-serif;fill:#e2e8f0;font-size:24px;font-weight:700}.small{font-family:Inter,Arial,sans-serif;fill:#94a3b8;font-size:18px}.mono{font-family:JetBrains Mono,monospace;fill:#cbd5e1;font-size:16px}.panel{fill:rgba(15,23,42,.72);stroke:rgba(56,189,248,.24);stroke-width:2}</style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="70" y="82" class="title" font-size="46">TOWER ANATOMY: SHARED FOUNDATION + INDEPENDENT BUSINESS FLOORS</text>
+  <text x="74" y="122" class="small">Each browser client, workstation, server, or device is represented as a tower in the Jungle Computing city.</text>
+
+  <g transform="translate(530 130)" filter="url(#glow)">
+    <polygon points="150,0 490,80 490,640 150,720" fill="#07111f" stroke="#38bdf8" stroke-width="3" opacity="0.82"/>
+    <polygon points="150,0 0,90 0,650 150,720" fill="#0b1d33" stroke="#38bdf8" stroke-width="3" opacity="0.74"/>
+    <polygon points="0,90 340,170 490,80 150,0" fill="#0f2a45" stroke="#38bdf8" stroke-width="2" opacity="0.66"/>
+    
+    <g opacity=".96">
+      <polygon points="28,130 170,60 462,128 330,196" fill="url(#blue)" opacity=".25"/>
+      <polygon points="28,200 170,130 462,198 330,266" fill="url(#blue)" opacity=".35"/>
+      <polygon points="28,270 170,200 462,268 330,336" fill="url(#blue)" opacity=".45"/>
+      <polygon points="28,340 170,270 462,338 330,406" fill="url(#blue)" opacity=".55"/>
+      <polygon points="28,410 170,340 462,408 330,476" fill="url(#blue)" opacity=".65"/>
+    </g>
+    <g>
+      <polygon points="28,480 170,410 462,478 330,546" fill="url(#gold)" opacity=".7"/>
+      <polygon points="28,535 170,465 462,533 330,601" fill="url(#gold)" opacity=".82"/>
+      <polygon points="28,590 170,520 462,588 330,656" fill="url(#gold)" opacity=".92"/>
+      <polygon points="28,645 170,575 462,643 330,711" fill="url(#gold)" opacity="1"/>
+    </g>
+    <path d="M248 650 C250 560 250 490 248 410 C246 320 248 230 252 120" stroke="#7dd3fc" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+    <circle cx="252" cy="122" r="12" fill="#e0f2fe"/>
+  </g>
+
+  <g transform="translate(80 210)">
+    <rect width="400" height="250" rx="22" class="panel"/>
+    <text x="28" y="48" class="label">Upper business layers</text>
+    <text x="28" y="86" class="small">Blue / cyan floors are independent.</text>
+    <text x="28" y="126" class="mono">• UI and workflows</text>
+    <text x="28" y="156" class="mono">• AI agents and tools</text>
+    <text x="28" y="186" class="mono">• Application logic</text>
+    <text x="28" y="216" class="mono">• Business-specific services</text>
+  </g>
+
+  <g transform="translate(1120 250)">
+    <rect width="400" height="360" rx="22" class="panel"/>
+    <text x="28" y="48" class="label">Shared foundation</text>
+    <text x="28" y="86" class="small">Orange / gold floors are common to all towers.</text>
+    <text x="28" y="132" class="mono">01 Security + Trust</text>
+    <text x="28" y="172" class="mono">02 Data + Storage</text>
+    <text x="28" y="212" class="mono">03 P2P Communication</text>
+    <text x="28" y="252" class="mono">04 Compute Abstraction</text>
+    <text x="28" y="310" class="small">Above this base, every tower can run different applications while still speaking the same network language.</text>
+  </g>
+
+  <path d="M480 330 C550 330 560 285 620 275" stroke="#38bdf8" stroke-width="3" fill="none" opacity=".7"/>
+  <path d="M1120 490 C1040 500 1000 640 930 715" stroke="#f59e0b" stroke-width="3" fill="none" opacity=".8"/>
+</svg>
