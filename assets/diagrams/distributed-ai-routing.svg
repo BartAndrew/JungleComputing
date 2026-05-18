@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Distributed AI Routing</title>
+  <desc id="desc">A Jungle Computing diagram showing AI task delegation between trusted nodes in a peer-to-peer compute mesh.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#020617"/><stop offset="1" stop-color="#07111f"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0284c7"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .title{font-family:Orbitron,Inter,sans-serif;font-weight:800;letter-spacing:4px;fill:#f8fafc}.heading{font-family:Inter,Arial,sans-serif;font-weight:800;fill:#e2e8f0;font-size:28px}.small{font-family:Inter,Arial,sans-serif;fill:#94a3b8;font-size:18px}.mono{font-family:JetBrains Mono,monospace;fill:#cbd5e1;font-size:15px}.panel{fill:rgba(15,23,42,.72);stroke:rgba(56,189,248,.22);stroke-width:2}
+    </style>
+  </defs>
+
+  <rect width="1800" height="1000" fill="url(#bg)"/>
+
+  <text x="70" y="84" class="title" font-size="48">DISTRIBUTED AI ROUTING ACROSS TRUSTED PEERS</text>
+  <text x="74" y="126" class="small">A lightweight browser node can delegate heavy compute or AI inference to stronger peers within the same trust boundary.</text>
+
+  <!-- Mesh city -->
+  <g transform="translate(170 250)" filter="url(#glow)">
+    <!-- Mobile node -->
+    <rect x="40" y="380" width="54" height="120" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+    <circle cx="67" cy="394" r="4" fill="#38bdf8"/>
+    <text x="-10" y="540" class="small">Mobile client</text>
+
+    <!-- Desktop -->
+    <rect x="320" y="260" width="84" height="260" rx="6" fill="url(#blue)" opacity=".95"/>
+    <rect x="334" y="492" width="56" height="34" rx="3" fill="url(#gold)"/>
+    <text x="280" y="560" class="small">Desktop node</text>
+
+    <!-- GPU tower -->
+    <rect x="670" y="120" width="120" height="420" rx="8" fill="url(#purple)" opacity=".95"/>
+    <rect x="690" y="510" width="80" height="40" rx="4" fill="url(#gold)"/>
+    <text x="640" y="590" class="small">GPU / AI node</text>
+
+    <!-- Storage -->
+    <rect x="1030" y="300" width="90" height="220" rx="6" fill="url(#blue)" opacity=".85"/>
+    <rect x="1045" y="492" width="60" height="34" rx="3" fill="url(#gold)"/>
+    <text x="1008" y="560" class="small">Storage node</text>
+
+    <!-- Authority -->
+    <circle cx="560" cy="70" r="42" fill="url(#gold)"/>
+    <text x="465" y="20" class="small">Identity + signalling</text>
+
+    <!-- Connections -->
+    <g stroke="#38bdf8" stroke-width="5" opacity=".82">
+      <path d="M94 430 C180 420 240 380 320 380" fill="none"/>
+      <path d="M404 380 C510 340 610 280 670 250" fill="none"/>
+      <path d="M790 300 C890 330 960 350 1030 380" fill="none"/>
+      <path d="M560 110 C520 170 450 250 380 320" fill="none" opacity=".6"/>
+      <path d="M560 110 C620 180 680 220 730 260" fill="none" opacity=".6"/>
+    </g>
+
+    <!-- AI task packet -->
+    <circle cx="210" cy="405" r="12" fill="url(#purple)"/>
+    <circle cx="560" cy="300" r="16" fill="url(#purple)"/>
+    <circle cx="900" cy="340" r="12" fill="#22c55e"/>
+  </g>
+
+  <!-- Right side explanation -->
+  <g transform="translate(1250 230)">
+    <rect width="470" height="560" rx="28" class="panel"/>
+    <text x="34" y="58" class="heading">How AI delegation works</text>
+
+    <text x="34" y="112" class="mono">1. Small peer requests AI workload</text>
+    <text x="34" y="158" class="mono">2. Mesh checks trust + permissions</text>
+    <text x="34" y="204" class="mono">3. Task routes to stronger peer</text>
+    <text x="34" y="250" class="mono">4. GPU node executes inference</text>
+    <text x="34" y="296" class="mono">5. Results return directly</text>
+
+    <text x="34" y="376" class="small">Example use cases:</text>
+    <text x="54" y="424" class="small">• Image analysis</text>
+    <text x="54" y="458" class="small">• AI-assisted estimation</text>
+    <text x="54" y="492" class="small">• Distributed LLM inference</text>
+    <text x="54" y="526" class="small">• Local AI agents</text>
+    <text x="54" y="560" class="small">• Shared compute acceleration</text>
+
+    <text x="34" y="646" class="small">AI tasks only route between peers that share compatible trust, permissions, and encryption boundaries.</text>
+  </g>
+
+  <!-- Flow legend -->
+  <g transform="translate(120 850)">
+    <circle cx="0" cy="0" r="12" fill="url(#purple)"/>
+    <text x="28" y="6" class="small">AI task packet</text>
+
+    <circle cx="280" cy="0" r="12" fill="#22c55e"/>
+    <text x="308" y="6" class="small">Result packet</text>
+
+    <line x1="560" y1="0" x2="650" y2="0" stroke="#38bdf8" stroke-width="5"/>
+    <text x="680" y="6" class="small">Trusted peer connection</text>
+  </g>
+</svg>
