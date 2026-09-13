@@ -6,17 +6,17 @@ receivers:
           scrape_interval: 5s
           static_configs:
             - targets: ["registry:8080"]
-
+        - job_name: repair-network
+          scrape_interval: 5s
+          static_configs:
+            - targets: ["repair-network:8081"]
 processors:
   batch: {}
-
 exporters:
   debug:
     verbosity: basic
-
 extensions:
   health_check: {}
-
 service:
   extensions: [health_check]
   pipelines:

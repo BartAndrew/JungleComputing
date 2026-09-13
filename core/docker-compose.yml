@@ -1,3 +1,4 @@
+# Local developer stack. Only the registry/UI is published, on loopback.
 services:
   postgres:
     image: postgres:17-alpine
@@ -20,12 +21,43 @@ services:
     environment:
       DATABASE_URL: postgres://jungle:jungle@postgres:5432/jungle
       JUNGLE_BIND: 0.0.0.0:8080
+      JUNGLE_DEV_MODE: "true"
+      JUNGLE_SERVICE_TOKEN: ${JUNGLE_SERVICE_TOKEN:?Generate a local service token in core/.env first}
+      REPAIR_NETWORK_URL: http://repair-network:8081
+      JUNGLE_ALLOWED_HOSTS: localhost:8080,127.0.0.1:8080,registry:8080
       RUST_LOG: info
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+
+  repair-network:
+    build:
+      context: .
+      dockerfile: repair-network/Dockerfile
+    environment:
+      DATABASE_URL: postgres://jungle:jungle@postgres:5432/jungle
+      REPAIR_BIND: 0.0.0.0:8081
+      JUNGLE_DEV_MODE: "true"
+      JUNGLE_SERVICE_TOKEN: ${JUNGLE_SERVICE_TOKEN:?Generate a local service token in core/.env first}
+      JUNGLE_REGISTRY: http://registry:8080
+      RUST_LOG: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      registry:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8081/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
   simulator:
     image: python:3.13-alpine
@@ -36,7 +68,8 @@ services:
     volumes:
       - ./simulator:/simulator:ro
     depends_on:
-      - registry
+      registry:
+        condition: service_healthy
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.136.0
@@ -44,9 +77,10 @@ services:
     volumes:
       - ./otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
     depends_on:
-      - registry
-    ports:
-      - "13133:13133"
+      registry:
+        condition: service_healthy
+      repair-network:
+        condition: service_healthy
 
 volumes:
   jungle-postgres:
