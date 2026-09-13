@@ -36,11 +36,26 @@ This documentation set is designed to support the GitHub Pages site and the impl
 10. [Implementation Roadmap](10-implementation-roadmap.md)  
    A staged plan for turning the concept page into an interactive demo and later a working framework.
 
+11. [Jungle Core](core/README.md)  
+   The production application-platform design: control plane, runtime/data plane, observability, Canopy administration, platform contracts, and the first reference implementation roadmap.
+
 ## Core idea
 
 Most web applications today are designed as a central server plus a database, with browsers acting as mostly thin clients. Jungle Computing turns that model around. The browser becomes an active participant: a compute node, data replica, communication peer, visualization surface, and sometimes even an AI endpoint.
 
 A small centralized authority may still exist, but its role is reduced. It should help nodes discover one another, establish trust, and initiate connections. It should not become the place where all business value, application state, and compute must permanently live.
+
+## From concept to platform
+
+The original architecture and simulation remain the long-term distributed-computing direction. **Jungle Core** now defines the pragmatic production platform used to build real applications while that direction evolves.
+
+Jungle Core has three first-class planes:
+
+- **Control Plane** — identity, organisations, policy, registry, configuration and orchestration.
+- **Runtime / Data Plane** — APIs, events, jobs, files, data, sync, integrations and compute.
+- **Observation Plane** — metrics, traces, logs, platform/business events, topology, SLOs, alerts, audit and cost/capacity measurement.
+
+The existing tower/city/island visual language becomes the basis of **Canopy**, the live administrator experience. In live mode, towers and connections should represent actual registered nodes, dependencies and telemetry rather than hard-coded simulation data.
 
 ## Visual metaphor
 
@@ -63,6 +78,8 @@ The public website should work as a static site:
 - Simulation mode first, real WebRTC signalling later.
 - Optional WebSocket/WebRTC examples should be clearly marked as future/live mode.
 
+The production Canopy application is separate from this public static-site constraint and may connect to real Jungle Core APIs and telemetry services.
+
 ## Recommended site structure
 
 ```text
@@ -76,11 +93,14 @@ The public website should work as a static site:
     data/
   docs/
     README.md
+    core/
     01-concept-overview.md
     02-from-monolith-to-mesh.md
     ...
+  core/
+    contracts/
 ```
 
 ## Status
 
-This documentation describes the target concept and design direction. The first production-ready GitHub Pages version should focus on education, simulation, and visual clarity before attempting real distributed compute.
+The original documentation describes the target concept and design direction. The new `docs/core/` documentation begins the production architecture. The immediate implementation priority is an **observable skeleton**: node registry, health/heartbeat, OpenTelemetry collection and a minimal Canopy view driven by real telemetry before building the Repair Network vertical slice.
