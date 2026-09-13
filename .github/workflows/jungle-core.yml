@@ -1,0 +1,32 @@
+name: Jungle Core
+
+on:
+  push:
+    paths:
+      - "core/**"
+      - ".github/workflows/jungle-core.yml"
+  pull_request:
+    paths:
+      - "core/**"
+      - ".github/workflows/jungle-core.yml"
+
+jobs:
+  rust-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core/registry
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/registry
+      - run: cargo fmt --check
+      - run: cargo check
+
+  compose-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f core/docker-compose.yml config
