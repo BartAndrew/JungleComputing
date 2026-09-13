@@ -1,0 +1,26 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: jungle-registry
+          scrape_interval: 5s
+          static_configs:
+            - targets: ["registry:8080"]
+
+processors:
+  batch: {}
+
+exporters:
+  debug:
+    verbosity: basic
+
+extensions:
+  health_check: {}
+
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [debug]
