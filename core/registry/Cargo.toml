@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 description = "Jungle Core node registry and heartbeat service"
 license = "MIT"
+autobins = false
+
+[[bin]]
+name = "jungle-registry"
+path = "src/app.rs"
 
 [dependencies]
 anyhow = "1"
