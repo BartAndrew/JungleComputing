@@ -1,6 +1,7 @@
-//! Local-development Jungle registry and observation gateway.
-//! Production identity and tenant isolation are intentionally not implied.
+//! Loopback-only development registry and observation gateway.
+//! User authentication and tenant isolation are not implemented.
 mod applications;
+mod observatory;
 
 use std::{convert::Infallible, env, sync::{atomic::{AtomicU64, Ordering}, Arc}, time::Duration};
 use axum::{extract::{DefaultBodyLimit, Path, Request, State}, http::{header, StatusCode}, middleware::{self, Next}, response::{sse::{Event, KeepAlive}, Html, IntoResponse, Response, Sse}, routing::{get, post}, Json, Router};
@@ -13,7 +14,6 @@ use tokio_stream::{wrappers::BroadcastStream, StreamExt};
 use tracing::{error, info};
 use uuid::Uuid;
 
-const CANOPY_HTML: &str = include_str!("../../canopy/index.html");
 #[derive(Clone)]
 struct AppState { db: PgPool, events: broadcast::Sender<PlatformEvent>, metrics: Arc<Metrics> }
 #[derive(Default)]
@@ -55,9 +55,11 @@ async fn main() -> anyhow::Result<()> {
     applications::migrate(&db).await?;
     let (events, _) = broadcast::channel(512);
     let state = AppState { db, events, metrics: Arc::new(Metrics::default()) };
+    observatory::start(state.clone()).await?;
     sweep(state.clone());
     let app = Router::new()
-        .route("/", get(|| async { Html(CANOPY_HTML) }))
+        .route("/", get(|| async { Html(include_str!("../../canopy/network.html")) }))
+        .route("/overview", get(|| async { Html(include_str!("../../canopy/index.html")) }))
         .route("/ui.css", get(|| async { ([(header::CONTENT_TYPE, "text/css; charset=utf-8")], include_str!("../../canopy/ui.css")) }))
         .route("/ui.js", get(|| async { ([(header::CONTENT_TYPE, "application/javascript; charset=utf-8")], include_str!("../../canopy/ui.js")) }))
         .route("/healthz", get(healthz)).route("/metrics", get(metrics))
@@ -65,10 +67,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/nodes/{id}", get(get_node))
         .route("/api/nodes/{id}/heartbeat", post(heartbeat))
         .route("/api/events", get(event_stream))
-        .merge(applications::routes())
+        .merge(applications::routes()).merge(observatory::routes())
         .layer(DefaultBodyLimit::max(16 * 1024))
-        .layer(middleware::from_fn_with_state(state.clone(), guard))
-        .with_state(state);
+        .layer(middleware::from_fn_with_state(state.clone(), guard)).with_state(state);
     let bind = env::var("JUNGLE_BIND").unwrap_or_else(|_| "127.0.0.1:8080".into());
     let listener = tokio::net::TcpListener::bind(&bind).await?;
     info!(%bind, "Jungle development registry ready");
@@ -134,7 +135,7 @@ async fn heartbeat(Path(id): Path<Uuid>, State(s): State<AppState>, Json(i): Jso
     if !matches!(status.as_str(), "online" | "degraded" | "offline") || [i.cpu_percent, i.memory_percent].iter().flatten().any(|v| !v.is_finite() || *v < 0.0 || *v > 100.0) { return Err(ApiError::Invalid); }
     let result = sqlx::query("UPDATE jungle_nodes SET status=$2,cpu_percent=$3,memory_percent=$4,metadata=COALESCE($5,metadata),last_seen_at=NOW() WHERE id=$1")
         .bind(id).bind(&status).bind(i.cpu_percent).bind(i.memory_percent).bind(i.metadata).execute(&s.db).await?;
-    if result.rows_affected() == 0 { return Err(ApiError::NotFound); }
+    if result.rows_affected()==0 { return Err(ApiError::NotFound); }
     s.metrics.heartbeats.fetch_add(1, Ordering::Relaxed);
     emit(&s, "node.heartbeat", Some(id.to_string()), json!({"status":status}));
     Ok(Json(fetch_node(&s.db, id).await?))
@@ -191,6 +192,7 @@ async fn metrics(State(s): State<AppState>) -> Result<Response, ApiError> {
         let safe=status.replace('\\',"\\\\").replace('"',"\\\"").replace('\n',"\\n");
         body.push_str(&format!("jungle_nodes{{status=\"{safe}\"}} {count}\n"));
     }
+    body.push_str(&observatory::metrics(&s.db).await?);
     Ok(([(header::CONTENT_TYPE,"text/plain; version=0.0.4")],body).into_response())
 }
 #[derive(Debug)]
