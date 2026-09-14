@@ -1,0 +1,44 @@
+name: Jungle Core
+
+on:
+  push:
+    paths: ["core/**", ".github/workflows/jungle-core.yml"]
+  pull_request:
+    paths: ["core/**", ".github/workflows/jungle-core.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  rust-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        crate: [registry, repair-network]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/${{ matrix.crate }}
+      - run: cargo test --manifest-path core/${{ matrix.crate }}/Cargo.toml
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate ephemeral development service token
+        run: python3 -c "import secrets; print('JUNGLE_SERVICE_TOKEN=' + secrets.token_hex(32))" > core/.env
+      - name: Validate Compose
+        run: docker compose -f core/docker-compose.yml config --quiet
+      - name: Build and start reference stack
+        run: docker compose -f core/docker-compose.yml up -d --build --wait --wait-timeout 180
+      - name: Run actual service integration checks
+        run: python3 core/tests/smoke.py
+      - name: Service logs on failure
+        if: failure()
+        run: docker compose -f core/docker-compose.yml logs --tail=120 registry repair-network otel-collector
+      - name: Clean up runner resources
+        if: always()
+        run: docker compose -f core/docker-compose.yml down -v
