@@ -1,38 +1,56 @@
 # Release Scope and Verification
 
-**Edition:** 14 September 2026. **Branch:** `build/jungle-core-v0.1`. Source changes are proposed for review, not automatically merged, deployed on the user's server or connected to this ChatGPT conversation.
+**Edition:** 14 September 2026. **Branch:** `build/jungle-core-v0.1`. Source changes are proposed for review, not automatically merged, installed on the user's server or connected to this ChatGPT conversation.
 
 ## Included code
 
-- Existing Rust/PostgreSQL registry, Repair Network cases and transactional event outbox.
-- Previously drafted Network Observatory files connected to `/` and `/network`; `/overview` retains the earlier view.
-- Source-backed 3D registered-node display, filters/layers, list fallback, activity and saved topology replay.
-- Sample storage and bounded, fixed-target diagnostic jobs.
-- Two official-SDK MCP surfaces: platform and repair, read-only by default, optional exact prepared/confirmed writes.
-- Stdio and protected local Streamable HTTP, documentation resources, review prompts and configuration generator.
-- Detailed user, AI, operations and developer manuals; safe non-overwriting local bootstrap; test workflows.
+- Rust/PostgreSQL registry, real Repair Network cases and transactional event outbox.
+- Previously drafted Network Observatory wired to `/` and `/network`; conventional view retained at `/overview`.
+- Registered-node 3D display, filters/layers, list fallback, live activity and recorded topology replay.
+- Bounded snapshot storage and fixed-target diagnostic jobs.
+- Separate official-SDK platform and Repair Network MCP interfaces, read-only by default with optional exact prepared/confirmed writes.
+- Stdio and protected local Streamable HTTP, documentation resources, review prompts and client configuration generator.
+- Detailed user, AI, operations and developer manuals; safe non-overwriting bootstrap and test workflows.
 
-## Verification evidence
+## Verified implementation revision
 
-During authoring, 35 dependency-free Python domain/security tests passed. They covered read-only enforcement, layer separation, exact plans, expiry, repeated confirmations, uncertain-create retry safety, version/lifecycle conflicts, metadata minimisation, localhost restrictions and bearer/Host/Origin/body guards. Python syntax was checked.
+The code revision tested is **`215e1cec32b03e5687a5a7f81223c1b1ddac280f`**. Subsequent documentation-only revisions do not alter that implementation.
 
-The authoring environment could not install the MCP SDK or execute Docker/Rust because network/toolchain support was unavailable. Those local tests therefore do not establish a successful SDK handshake, running Rust stack or rendered 3D browser session. New CI checks exercise SDK negotiation and a separate real-stack build/integration. Inspect the current commit's GitHub Actions for additional evidence.
+Observed GitHub Actions results:
 
-Previous screenshots used fictional browser fixture responses. They are not customer telemetry or fresh verification of this observatory revision. Do not infer production readiness from them.
+| Check | Observed result |
+|---|---|
+| Python domain/security unit tests | **35 passed** |
+| Platform MCP stdio: read-only and write-enabled discovery/calls | Passed |
+| Repair MCP stdio: read-only and write-enabled discovery/calls | Passed |
+| Resources and review prompts on both servers | Passed |
+| Create/transition preparation, denied false confirmation and duplicate confirmation | Passed against fictional HTTP fixture |
+| Actual SDK Streamable HTTP initialization/discovery/tool call | Passed against fictional HTTP fixture |
+| HTTP bearer requirement and hostile Origin rejection | Passed |
+| Rust registry crate tests | Passed |
+| Rust Repair Network crate tests | Passed |
+| Compose configuration validation | Passed |
+| Full container build and real Rust/PostgreSQL MCP integration | Still running at the evidence check; not claimed as passed |
+
+[MCP workflow and logs](https://github.com/BartAndrew/JungleComputing/actions/runs/34793526759) and [Rust/Core workflow](https://github.com/BartAndrew/JungleComputing/actions/runs/34793526643).
+
+The protocol workflow installed the official **MCP Python SDK 1.30.0** under the bounded v1 dependency range. These were real SDK handshakes, not a handwritten protocol imitation. Its default backend was explicitly fictional, so successful protocol tests must not be relabelled as successful real-stack or production tests. The separate `--live` job exercises the actual application stack.
+
+The authoring sandbox lacked the SDK/network/Docker/Rust environment for local integration. Dependency-free tests also ran during authoring; full protocol checks were executed by GitHub Actions. There is no fresh rendered-browser verification of the new observatory in this revision. Older screenshots used fictional browser fixture responses, not real customers.
 
 ## Explicit exclusions
 
 No user login, tenant/resource isolation, verified machine enrolment, OAuth deployment, public ChatGPT app connection, production hosting, booking capacity, insurer integration, repair-method/evidence files, parts ordering, payments, general distributed-job orchestration, measured P2P traffic, complete OTLP history, tamper-proof audit or certified disaster recovery.
 
-Authority-01 and Worker-01 remain simulated. Unreported actual resource values remain unknown. Foundation floors/capability strings do not prove features are implemented or secure.
+Authority-01 and Worker-01 remain simulated. Unreported actual measurements remain unknown. Architectural floors and capability strings do not prove that features are implemented or secure. A confirmation boolean does not prove a human approved: the AI host must enforce approval before writes.
 
 ## Acceptance gates
 
-1. Review the exact source/dependency diff.
-2. Require current-commit unit and SDK protocol checks.
-3. Require a successful Rust/Compose build and live MCP smoke test.
+1. Review exact source/dependency differences.
+2. Check the current implementation's unit and SDK protocol results.
+3. Require successful full-stack build and live MCP integration before merging for use.
 4. Verify desktop/mobile, graphics and accessible-list behaviour on the target device.
-5. Keep fictional data and loopback bindings until production identity exists.
-6. Configure the AI client read-only before enabling a particular layer's writes.
-7. Confirm host human-approval settings; a boolean is not consent evidence.
+5. Retain fictional data and loopback bindings until production identity exists.
+6. Configure AI access read-only before enabling the intended layer's writes.
+7. Confirm host human-approval policy.
 8. Merge/deploy only through an explicit operator action.
