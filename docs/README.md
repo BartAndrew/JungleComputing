@@ -36,6 +36,12 @@ This documentation set is designed to support the GitHub Pages site and the impl
 10. [Implementation Roadmap](10-implementation-roadmap.md)  
    A staged plan for turning the concept page into an interactive demo and later a working framework.
 
+11. [Internal Application Security Audit Framework](security/internal-application-security-audit-framework.md)  
+   A 220-control internal questionnaire covering application security, privacy, access, SDLC, AI/agents/MCP, suppliers, resilience and incident response.
+
+12. [Automated Security Assessment & Reporting](security/automated-security-assessment-and-reporting.md)  
+   Technical scanning, scoring, category reporting, risk treatment and a roadmap for building Jungle Computing's own internal security-audit engine.
+
 11. [Jungle Core](core/README.md)  
    The production application-platform design: control plane, runtime/data plane, observability, Canopy administration, platform contracts, and the first reference implementation roadmap.
 
