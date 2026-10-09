@@ -1,0 +1,2 @@
+# Official maintained v1 API, explicitly bounded against the v2 breaking changes.
+mcp>=1.28,<2
